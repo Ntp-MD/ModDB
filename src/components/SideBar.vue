@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useSidebar } from "../hooks/useSidebar";
+import { useSearch } from "../hooks/useSearch";
 
 const route = useRoute();
+const router = useRouter();
 const { sidebarOpen, closeSidebar } = useSidebar();
+const { activeLabel, setActiveLabel, clearSearch } = useSearch();
 
 const navItems = [
   { id: "inbox", label: "Inbox", route: "/", icon: "inbox", count: 3 },
@@ -15,11 +18,24 @@ const navItems = [
 ];
 
 const labelItems = [
-  { id: "design", label: "Design", color: "blue" },
-  { id: "engineering", label: "Engineering", color: "green" },
-  { id: "marketing", label: "Marketing", color: "yellow" },
-  { id: "sales", label: "Sales", color: "red" },
+  { id: "blue", label: "Design", color: "blue" },
+  { id: "green", label: "Engineering", color: "green" },
+  { id: "yellow", label: "Marketing", color: "yellow" },
+  { id: "red", label: "Sales", color: "red" },
 ];
+
+function handleLabelClick(labelId: string) {
+  if (activeLabel.value === labelId) {
+    clearSearch();
+  } else {
+    setActiveLabel(labelId);
+    // Navigate to inbox to show filtered results
+    if (route.path !== "/") {
+      router.push("/");
+    }
+  }
+  closeSidebar();
+}
 </script>
 
 <template>
@@ -80,7 +96,14 @@ const labelItems = [
       <p class="nav-section-title nav-label">Labels</p>
       <ul role="list">
         <li v-for="lbl in labelItems" :key="lbl.id">
-          <span class="nav-item">
+          <span
+            class="nav-item"
+            :class="{ 'nav-item-active': activeLabel === lbl.id }"
+            @click="handleLabelClick(lbl.id)"
+            role="button"
+            tabindex="0"
+            @keydown.enter="handleLabelClick(lbl.id)"
+          >
             <span class="nav-icon" aria-hidden="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" :style="{ color: `var(--label-${lbl.color})` }">
                 <path
@@ -98,7 +121,9 @@ const labelItems = [
 
 <style scoped>
 .sidebar-compose {
-  padding: var(--space-sm) var(--space-md) var(--space-sm);
+  place-content: center;
+  padding: 0 var(--space-sm);
+  min-height: 70px;
 }
 
 .compose-btn {

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useSidebar } from "../hooks/useSidebar";
+import { useSearch } from "../hooks/useSearch";
 
 const { toggleSidebar } = useSidebar();
-const searchQuery = ref("");
+const { searchQuery } = useSearch();
 const searchFocused = ref(false);
 </script>
 

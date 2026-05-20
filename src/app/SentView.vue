@@ -11,7 +11,7 @@ function goInbox() {
 <template>
   <main class="main-content">
     <div class="main-content-inner">
-      <div class="sent-toolbar">
+      <div class="sent-toolbar main-toolbar">
         <h1 class="sent-title">Sent</h1>
       </div>
       <div class="empty-state">
@@ -31,17 +31,6 @@ function goInbox() {
 </template>
 
 <style scoped>
-.sent-toolbar {
-  display: flex;
-  align-items: center;
-  padding: 8px 0 8px var(--space-xs);
-  background: var(--bg-color-page);
-  margin-bottom: var(--space-md);
-  position: sticky;
-  top: var(--topbar-height);
-  z-index: var(--z-sticky);
-}
-
 .sent-title {
   font-size: 22px;
   font-weight: 400;

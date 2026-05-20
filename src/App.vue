@@ -7,15 +7,24 @@ import ToastContainer from "./components/ToastContainer.vue";
 <template>
   <div class="app-shell">
     <TopBar />
-    <SideBar />
-    <router-view />
+    <div class="app-content">
+      <SideBar />
+      <router-view />
+    </div>
     <ToastContainer />
   </div>
 </template>
 
 <style>
 .app-shell {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: var(--bg-color-page);
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
 }
 </style>

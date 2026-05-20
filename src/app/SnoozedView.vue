@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { mockMessages } from "../utils/mockData";
+import { mockSnoozedMessages } from "../utils/mockData";
 
 const router = useRouter();
-const starredMessages = computed(() => mockMessages.filter((m) => m.starred));
+const snoozedMessages = computed(() => mockSnoozedMessages);
 
 function openThread(id: string) {
   router.push(`/thread/${id}`);
@@ -14,20 +14,26 @@ function openThread(id: string) {
 <template>
   <main class="main-content">
     <div class="main-content-inner">
-      <div class="starred-toolbar main-toolbar">
-        <h1 class="starred-title">Starred</h1>
+      <div class="snoozed-toolbar main-toolbar">
+        <h1 class="snoozed-title">Snoozed</h1>
       </div>
 
-      <section class="inbox-list fade-in" aria-label="Starred messages">
+      <section class="inbox-list fade-in" aria-label="Snoozed messages">
         <div
-          v-for="msg in starredMessages"
+          v-for="msg in snoozedMessages"
           :key="msg.id"
           class="list-row hover-row"
           :class="msg.unread ? 'list-row-unread' : 'list-row-read'"
           @click="openThread(msg.id)"
         >
           <div class="row-cell row-cell-star">
-            <button class="star-btn star-btn-active focus-ring" aria-label="Unstar">★</button>
+            <button class="star-btn focus-ring" aria-label="Snooze" aria-disabled="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                />
+              </svg>
+            </button>
           </div>
           <div class="row-cell row-cell-from">{{ msg.from }}</div>
           <div class="row-cell row-cell-content">
@@ -37,12 +43,12 @@ function openThread(id: string) {
           <div class="row-cell row-cell-timestamp hide-mobile">{{ msg.timestamp }}</div>
         </div>
 
-        <div v-if="starredMessages.length === 0" class="empty-state">
+        <div v-if="snoozedMessages.length === 0" class="empty-state">
           <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
           </svg>
-          <h2 class="empty-state-title">No starred messages</h2>
-          <p class="empty-state-text">Star messages to find them here.</p>
+          <h2 class="empty-state-title">No snoozed messages</h2>
+          <p class="empty-state-text">Snooze messages to find them here.</p>
         </div>
       </section>
     </div>
@@ -50,7 +56,7 @@ function openThread(id: string) {
 </template>
 
 <style scoped>
-.starred-title {
+.snoozed-title {
   font-size: 22px;
   font-weight: 400;
   color: var(--font-color-primary);

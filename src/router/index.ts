@@ -5,6 +5,8 @@ import ThreadView from "../app/ThreadView.vue";
 import StarredView from "../app/StarredView.vue";
 import SentView from "../app/SentView.vue";
 import ComposeView from "../app/ComposeView.vue";
+import SnoozedView from "../app/SnoozedView.vue";
+import DraftsView from "../app/DraftsView.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -13,6 +15,8 @@ const router = createRouter({
     { path: "/starred", component: StarredView },
     { path: "/people", component: PeopleView },
     { path: "/sent", component: SentView },
+    { path: "/snoozed", component: SnoozedView },
+    { path: "/drafts", component: DraftsView },
     { path: "/thread/:id", component: ThreadView },
     { path: "/compose", component: ComposeView },
   ],

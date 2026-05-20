@@ -16,7 +16,7 @@ function handleDelete(id: string) {
 <template>
   <main class="main-content">
     <div class="main-content-inner">
-      <div class="people-toolbar">
+      <div class="people-toolbar main-toolbar">
         <h1 class="people-title">People</h1>
         <button class="btn btn-compose focus-ring">
           <span class="btn-compose-icon">+</span>
@@ -43,18 +43,6 @@ function handleDelete(id: string) {
 </template>
 
 <style scoped>
-.people-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0 8px var(--space-xs);
-  background: var(--bg-color-page);
-  margin-bottom: var(--space-md);
-  position: sticky;
-  top: var(--topbar-height);
-  z-index: var(--z-sticky);
-}
-
 .people-title {
   font-size: 22px;
   font-weight: 400;

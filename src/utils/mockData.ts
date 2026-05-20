@@ -199,3 +199,61 @@ export const mockMessages: Message[] = [
     labelText: "Engineering",
   },
 ];
+
+export const mockSnoozedMessages: Message[] = [
+  {
+    id: "s1",
+    from: "Grace Liu",
+    fromInitials: "GL",
+    to: "me@example.com",
+    subject: "Budget Review Meeting",
+    snippet: "Rescheduled for next Monday at 2 PM.",
+    body: "The budget review meeting has been rescheduled. Please update your calendar accordingly.",
+    timestamp: "Tomorrow",
+    unread: false,
+    starred: false,
+    label: "yellow",
+    labelText: "Finance",
+  },
+  {
+    id: "s2",
+    from: "Henry Wang",
+    fromInitials: "HW",
+    to: "me@example.com",
+    subject: "Performance Review",
+    snippet: "Q2 review scheduled for next week.",
+    body: "Your Q2 performance review is scheduled for next Thursday. Please prepare your self-assessment.",
+    timestamp: "May 20",
+    unread: false,
+    starred: false,
+    label: "blue",
+    labelText: "HR",
+  },
+];
+
+export const mockDraftMessages: Message[] = [
+  {
+    id: "d1",
+    from: "me@example.com",
+    fromInitials: "ME",
+    to: "team@company.com",
+    subject: "Weekly Update - Week 20",
+    snippet: "Draft: Progress on key deliverables...",
+    body: "Team,\n\nHere's our weekly update for Week 20:\n\n1. Project Alpha: On track\n2. Project Beta: Delayed by 2 days\n3. Project Gamma: Completed\n\n[Draft - not sent]",
+    timestamp: "Draft",
+    unread: false,
+    starred: false,
+  },
+  {
+    id: "d2",
+    from: "me@example.com",
+    fromInitials: "ME",
+    to: "client@external.com",
+    subject: "Proposal for Phase 2",
+    snippet: "Draft: Attached is the revised proposal...",
+    body: "Dear Client,\n\nPlease find attached the revised proposal for Phase 2 of our engagement. We've incorporated your feedback from the last call.\n\n[Draft - not sent]",
+    timestamp: "Draft",
+    unread: false,
+    starred: false,
+  },
+];

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { mockMessages } from "../utils/mockData";
+import { mockDraftMessages } from "../utils/mockData";
 
 const router = useRouter();
-const starredMessages = computed(() => mockMessages.filter((m) => m.starred));
+const draftMessages = computed(() => mockDraftMessages);
 
 function openThread(id: string) {
   router.push(`/thread/${id}`);
@@ -14,22 +14,25 @@ function openThread(id: string) {
 <template>
   <main class="main-content">
     <div class="main-content-inner">
-      <div class="starred-toolbar main-toolbar">
-        <h1 class="starred-title">Starred</h1>
+      <div class="drafts-toolbar main-toolbar">
+        <h1 class="drafts-title">Drafts</h1>
       </div>
 
-      <section class="inbox-list fade-in" aria-label="Starred messages">
+      <section class="inbox-list fade-in" aria-label="Draft messages">
         <div
-          v-for="msg in starredMessages"
+          v-for="msg in draftMessages"
           :key="msg.id"
           class="list-row hover-row"
-          :class="msg.unread ? 'list-row-unread' : 'list-row-read'"
           @click="openThread(msg.id)"
         >
           <div class="row-cell row-cell-star">
-            <button class="star-btn star-btn-active focus-ring" aria-label="Unstar">★</button>
+            <button class="star-btn focus-ring" aria-label="Draft" aria-disabled="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5h-2v-2h2v2zm0-4h-2V6h2v4.5z" />
+              </svg>
+            </button>
           </div>
-          <div class="row-cell row-cell-from">{{ msg.from }}</div>
+          <div class="row-cell row-cell-from">{{ msg.to }}</div>
           <div class="row-cell row-cell-content">
             <span class="subject">{{ msg.subject }}</span>
             <span class="snippet hide-mobile"> — {{ msg.snippet }}</span>
@@ -37,12 +40,12 @@ function openThread(id: string) {
           <div class="row-cell row-cell-timestamp hide-mobile">{{ msg.timestamp }}</div>
         </div>
 
-        <div v-if="starredMessages.length === 0" class="empty-state">
+        <div v-if="draftMessages.length === 0" class="empty-state">
           <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8 12.5h-2v-2h2v2zm0-4h-2V6h2v4.5z" />
           </svg>
-          <h2 class="empty-state-title">No starred messages</h2>
-          <p class="empty-state-text">Star messages to find them here.</p>
+          <h2 class="empty-state-title">No drafts</h2>
+          <p class="empty-state-text">Draft messages will appear here.</p>
         </div>
       </section>
     </div>
@@ -50,7 +53,7 @@ function openThread(id: string) {
 </template>
 
 <style scoped>
-.starred-title {
+.drafts-title {
   font-size: 22px;
   font-weight: 400;
   color: var(--font-color-primary);

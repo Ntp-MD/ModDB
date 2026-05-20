@@ -31,7 +31,7 @@ function archiveMessage() {
   <main class="main-content">
     <div class="main-content-inner">
       <div v-if="message">
-        <div class="thread-toolbar">
+        <div class="thread-toolbar main-toolbar">
           <button class="btn-icon-only focus-ring" aria-label="Back to Inbox" @click="goBack">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
@@ -178,18 +178,6 @@ function archiveMessage() {
 </template>
 
 <style scoped>
-.thread-toolbar {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-sm) 0 var(--space-sm);
-  margin-bottom: var(--space-md);
-  position: sticky;
-  top: var(--topbar-height);
-  z-index: var(--z-sticky);
-  background: var(--bg-color-page);
-}
-
 .thread-subject {
   font-size: 22px;
   font-weight: 400;

@@ -2,11 +2,13 @@
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
+import { useSearch } from "../hooks/useSearch";
 import { mockMessages } from "../utils/mockData";
 import type { Message } from "../utils/types";
 
 const router = useRouter();
 const { showToast } = useToast();
+const { searchQuery, activeLabel } = useSearch();
 
 const messages = ref<Message[]>([...mockMessages]);
 const selectedIds = ref<Set<string>>(new Set());
@@ -18,14 +20,37 @@ const tabs = [
   { id: "social", label: "Social" },
 ];
 
-const allSelected = computed(() => messages.value.length > 0 && selectedIds.value.size === messages.value.length);
-const someSelected = computed(() => selectedIds.value.size > 0 && selectedIds.value.size < messages.value.length);
+const allSelected = computed(() => filteredMessages.value.length > 0 && selectedIds.value.size === filteredMessages.value.length);
+const someSelected = computed(() => selectedIds.value.size > 0 && selectedIds.value.size < filteredMessages.value.length);
+
+const filteredMessages = computed(() => {
+  let result = [...messages.value];
+
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    result = result.filter(
+      (msg) =>
+        msg.from.toLowerCase().includes(query) ||
+        msg.subject.toLowerCase().includes(query) ||
+        msg.snippet.toLowerCase().includes(query) ||
+        msg.body.toLowerCase().includes(query),
+    );
+  }
+
+  // Filter by label
+  if (activeLabel.value) {
+    result = result.filter((msg) => msg.label === activeLabel.value);
+  }
+
+  return result;
+});
 
 function toggleSelectAll() {
   if (allSelected.value) {
     selectedIds.value = new Set();
   } else {
-    selectedIds.value = new Set(messages.value.map((m) => m.id));
+    selectedIds.value = new Set(filteredMessages.value.map((m) => m.id));
   }
 }
 
@@ -66,7 +91,7 @@ function openThread(msg: Message) {
 <template>
   <main class="main-content">
     <div class="main-content-inner">
-      <div class="inbox-toolbar">
+      <div class="inbox-toolbar main-toolbar">
         <div class="inbox-toolbar-left">
           <div class="inbox-select-all" @click.stop>
             <input
@@ -95,7 +120,7 @@ function openThread(msg: Message) {
         </div>
         <div class="inbox-toolbar-right">
           <div class="pagination">
-            <span class="pagination-info">1–{{ messages.length }} of {{ messages.length }}</span>
+            <span class="pagination-info">1–{{ filteredMessages.length }} of {{ filteredMessages.length }}</span>
             <button class="pagination-btn focus-ring" disabled aria-label="Newer">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z" />
@@ -145,7 +170,7 @@ function openThread(msg: Message) {
 
       <section class="inbox-list" aria-label="Messages">
         <div
-          v-for="msg in messages"
+          v-for="msg in filteredMessages"
           :key="msg.id"
           class="list-row hover-row"
           :class="{
@@ -223,14 +248,14 @@ function openThread(msg: Message) {
           <div class="row-cell row-cell-timestamp hide-mobile">{{ msg.timestamp }}</div>
         </div>
 
-        <div v-if="messages.length === 0" class="empty-state">
+        <div v-if="filteredMessages.length === 0" class="empty-state">
           <svg class="empty-state-icon" viewBox="0 0 24 24" fill="currentColor" opacity="0.3">
             <path
               d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2v6zm0-10.5l-8 5-8-5V6l8 5 8-5v1.5z"
             />
           </svg>
-          <h2 class="empty-state-title">Your inbox is empty</h2>
-          <p class="empty-state-text">No messages to display.</p>
+          <h2 class="empty-state-title">{{ searchQuery || activeLabel ? "No results found" : "Your inbox is empty" }}</h2>
+          <p class="empty-state-text">{{ searchQuery || activeLabel ? "Try different search terms or filters" : "No messages to display." }}</p>
         </div>
       </section>
     </div>
@@ -238,16 +263,6 @@ function openThread(msg: Message) {
 </template>
 
 <style scoped>
-.inbox-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg-color-page);
-  position: sticky;
-  top: var(--topbar-height);
-  z-index: var(--z-sticky);
-}
-
 .inbox-toolbar-left {
   display: flex;
   align-items: center;

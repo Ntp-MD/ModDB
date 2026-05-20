@@ -14,6 +14,48 @@
   z-index: var(--z-topbar);
 }
 
+/* ── Mobile-specific adjustments ── */
+@media (max-width: 599px) {
+  .topbar-search {
+    max-width: none;
+    margin: 0 var(--space-sm);
+  }
+
+  .topbar-actions {
+    gap: 0;
+  }
+
+  .main-content {
+    padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-xs);
+  }
+
+  /* Mobile list optimizations */
+  .list-row {
+    padding: 0 var(--space-sm);
+    height: var(--row-height-cozy);
+  }
+
+  .row-cell-from {
+    width: 100px;
+  }
+
+  .row-cell-timestamp {
+    width: 60px;
+  }
+
+  .row-cell-content .snippet {
+    display: none;
+  }
+
+  .inbox-list {
+    max-height: calc(100vh - 200px);
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+}
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -48,9 +90,11 @@
 }
 
 .main-content {
+  flex: 1;
+  min-width: 0;
   margin-top: 64px;
   margin-left: 0;
-  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-xs);
+  padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-xs);
   min-height: calc(100vh - 64px);
   transition: margin-left var(--transition-normal);
 }
@@ -335,7 +379,7 @@
 }
 
 .row-cell-from {
-  width: 200px;
+  width: 120px;
   font-weight: inherit;
   white-space: nowrap;
   overflow: hidden;
@@ -360,7 +404,7 @@
 }
 
 .row-cell-timestamp {
-  width: 96px;
+  width: 80px;
   justify-content: flex-end;
   font-size: var(--font-xs);
   color: var(--font-color-muted);
@@ -795,9 +839,29 @@
   white-space: nowrap;
 }
 
-/* ─── Responsive Column Hiding ─── */
-/*
+.main-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  position: sticky;
+  top: 64px;
+  z-index: var(--z-sticky);
+  background: var(--bg-color-page);
+  min-height: 64px;
+}
 
+@media (max-width: 599px) {
+  .main-toolbar {
+    min-height: 56px;
+    padding: 0 var(--space-xs);
+  }
+
+  .main-content-inner {
+    display: flex;
+    flex-direction: column;
+  }
+}
 
 /* ── Tablet ── */
 @media (min-width: 600px) {
@@ -824,8 +888,12 @@
   .main-content {
     margin-top: var(--topbar-height);
     margin-left: var(--sidebar-width-mini);
-    padding: var(--space-sm) var(--space-md);
+    padding: 0 var(--space-lg);
     min-height: calc(100vh - var(--topbar-height));
+  }
+
+  .main-toolbar {
+    top: var(--topbar-height);
   }
 
   .person-grid {
@@ -902,8 +970,17 @@
     height: 48px;
   }
 
+  .sidebar {
+    top: 48px;
+    height: calc(100vh - 48px);
+  }
+
   .main-content {
     margin-top: 48px;
+  }
+
+  .main-toolbar {
+    top: 48px;
   }
 
   .list-row {
