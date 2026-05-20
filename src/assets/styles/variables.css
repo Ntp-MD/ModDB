@@ -1,0 +1,96 @@
+:root {
+  /* ─── Colors Theme (Gmail-exact) ─── */
+  --bg-color-page: #f6f8fc;
+  --bg-color-surface: #ffffff;
+  --bg-color-topbar: #ffffff;
+  --bg-color-nav-active: #d3e3fd;
+  --bg-color-row-hover: #f2f6fc;
+  --bg-color-row-hover-strong: #e8eaed;
+  --bg-color-selected: #c2d7ff;
+  --bg-color-unread: #ffffff;
+  --bg-color-read: #f2f6fc;
+  --bg-color-search: #eaf1fb;
+  --bg-color-compose: #c2e7ff;
+  --bg-color-overlay: rgba(0, 0, 0, 0.4);
+
+  --font-color-primary: #202124;
+  --font-color-secondary: #444746;
+  --font-color-muted: #5f6368;
+  --font-color-white: #ffffff;
+  --font-color-compose: #001d35;
+  --font-color-link: #0b57d0;
+
+  --border-color-subtle: #e0e0e0;
+
+  --accent-primary: #0b57d0;
+  --accent-primary-light: #d3e3fd;
+  --accent-success: #1e8e3e;
+  --accent-danger: #d93025;
+
+  /* ─── Gmail Label Badge Colors ─── */
+  --label-red: #d93025;
+  --label-yellow: #f9a825;
+  --label-green: #1e8e3e;
+  --label-blue: #0b57d0;
+
+  /* ─── Font Size — Gmail uses 14px base ─── */
+  --font-xs: clamp(11px, 0.5vw, 12px);
+  --font-sm: clamp(13px, 1vw, 14px);
+  --font-md: clamp(14px, 1.5vw, 16px);
+  --font-lg: clamp(16px, 2vw, 18px);
+  --font-xl: clamp(18px, 2.5vw, 20px);
+  --font-2xl: clamp(22px, 3vw, 26px);
+  --font-3xl: clamp(28px, 4vw, 34px);
+
+  /* ─── Spacing — Gmail 4px base grid ─── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+  --space-section: clamp(48px, 5vw, 96px);
+
+  /* ─── Fixed Layout Dimensions (Gmail-spec) ─── */
+  --topbar-height: 70px;
+  --sidebar-width: 256px;
+  --sidebar-width-mini: 72px;
+  --search-bar-width: 720px;
+  --search-bar-height: 48px;
+  --avatar-size: 40px;
+  --avatar-size-sm: 32px;
+  --avatar-size-lg: 80px;
+
+  /* ─── Border Radius ─── */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
+  --radius-circle: 50%;
+
+  /* ─── Density — Gmail row heights ─── */
+  --row-height-comfortable: 52px;
+  --row-height-compact: 40px;
+  --row-height-cozy: 32px;
+
+  /* ─── Transitions — max 200ms (Gmail rule) ─── */
+  --transition-fast: 0.1s ease;
+  --transition-normal: 0.2s ease;
+
+  /* ─── Shadows — Gmail uses almost none ─── */
+  --shadow-search-focus: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-dropdown: 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-topbar: 0 1px 0 var(--border-color-subtle);
+  --shadow-dialog: 0 24px 38px 3px rgba(0, 0, 0, 0.14), 0 9px 46px 8px rgba(0, 0, 0, 0.12), 0 11px 15px -7px rgba(0, 0, 0, 0.2);
+  --shadow-toast: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.12);
+
+  /* ─── Z-Index Scale ─── */
+  --z-base: 1;
+  --z-sticky: 10;
+  --z-sidebar: 90;
+  --z-topbar: 100;
+  --z-overlay: 200;
+  --z-dropdown: 300;
+  --z-dialog: 400;
+  --z-toast: 500;
+}

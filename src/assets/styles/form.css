@@ -1,0 +1,97 @@
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.form-label {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--font-color-muted);
+  letter-spacing: 0.25px;
+}
+
+.form-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--space-md);
+  background: var(--bg-color-surface);
+  border: 1px solid var(--border-color-subtle);
+  border-radius: var(--radius-xs);
+  color: var(--font-color-primary);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-light);
+}
+
+.form-input::placeholder {
+  color: var(--font-color-muted);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-color-surface);
+  border: 1px solid var(--border-color-subtle);
+  border-radius: var(--radius-xs);
+  color: var(--font-color-primary);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-primary-light);
+}
+
+.form-select {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--space-md);
+  background: var(--bg-color-surface);
+  border: 1px solid var(--border-color-subtle);
+  border-radius: var(--radius-xs);
+  color: var(--font-color-primary);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.form-hint {
+  font-size: var(--font-xs);
+  color: var(--font-color-muted);
+}
+
+.form-error {
+  font-size: var(--font-xs);
+  color: var(--accent-danger);
+}
+
+.form-input-error {
+  border-color: var(--accent-danger);
+}
+
+.form-input-error:focus {
+  box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.2);
+}
