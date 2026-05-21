@@ -12,14 +12,20 @@ export interface Person {
   email: string;
   role: string;
   company: string;
-  label: "red" | "yellow" | "green" | "blue";
+  label: "red" | "yellow" | "green" | "blue" | "purple";
   labelText: string;
   starred: boolean;
   unread: boolean;
   avatar?: string;
-  initials: string;
+  initials?: string;
   lastContact: string;
   snippet: string;
+  messages: Message[];
+  social?: {
+    facebook?: string;
+    instagram?: string;
+    linkedin?: string;
+  };
 }
 
 export interface Message {
@@ -33,6 +39,6 @@ export interface Message {
   timestamp: string;
   unread: boolean;
   starred: boolean;
-  label?: "red" | "yellow" | "green" | "blue";
+  label?: "red" | "yellow" | "green" | "blue" | "purple";
   labelText?: string;
 }

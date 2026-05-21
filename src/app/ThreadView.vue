@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
-import { mockMessages } from "../utils/mockData";
+import { getAllMessages, mockPeople } from "../utils/mockData";
 
 const route = useRoute();
 const router = useRouter();
@@ -10,7 +10,12 @@ const { showToast } = useToast();
 const replyText = ref("");
 const replyFocused = ref(false);
 
-const message = computed(() => mockMessages.find((m) => m.id === route.params.id));
+const message = computed(() => getAllMessages().find((m) => m.id === route.params.id));
+
+const person = computed(() => {
+  if (!message.value) return null;
+  return mockPeople.find((p) => p.messages.some((m) => m.id === message.value?.id));
+});
 
 function goBack() {
   router.back();
@@ -110,6 +115,17 @@ function archiveMessage() {
               <p v-for="(line, i) in message.body.split('\n')" :key="i" class="thread-body-line">
                 {{ line }}
               </p>
+              <div v-if="person && person.social" class="thread-social-links">
+                <a v-if="person.social.facebook" :href="person.social.facebook" target="_blank" class="thread-social-link" aria-label="Facebook">
+                  <img src="https://cdn-icons-png.flaticon.com/128/5968/5968764.png" alt="Facebook" class="thread-social-icon" />
+                </a>
+                <a v-if="person.social.instagram" :href="person.social.instagram" target="_blank" class="thread-social-link" aria-label="Instagram">
+                  <img src="https://cdn-icons-png.flaticon.com/128/3955/3955024.png" alt="Instagram" class="thread-social-icon" />
+                </a>
+                <a :href="`mailto:${person.email}`" class="thread-social-link" aria-label="Email">
+                  <img src="https://cdn-icons-png.flaticon.com/128/732/732200.png" alt="Email" class="thread-social-icon" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -251,6 +267,32 @@ function archiveMessage() {
   margin-top: 2px;
 }
 
+.thread-social-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.thread-social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  border-radius: var(--radius-circle);
+  transition: opacity var(--transition-fast);
+}
+
+.thread-social-link:hover {
+  opacity: 0.7;
+}
+
+.thread-social-icon {
+  width: 100%;
+  height: 100%;
+}
+
 .thread-timestamp {
   font-size: var(--font-xs);
   color: var(--font-color-muted);
@@ -274,6 +316,15 @@ function archiveMessage() {
 
 .thread-body-line {
   min-height: 20px;
+}
+
+.thread-social-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-color-subtle);
 }
 
 .thread-reply-area {
@@ -400,5 +451,35 @@ function archiveMessage() {
 .compose-footer-btn:hover {
   background: var(--bg-color-row-hover);
   color: var(--font-color-primary);
+}
+
+/* Thread Container */
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--font-color-muted);
+}
+
+.empty-state-title {
+  font-size: var(--font-lg);
+  font-weight: 500;
+  color: var(--font-color-primary);
+}
+
+.empty-state-text {
+  font-size: var(--font-sm);
+  color: var(--font-color-secondary);
 }
 </style>

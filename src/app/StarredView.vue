@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { mockMessages } from "../utils/mockData";
+import { getAllMessages, mockPeople, updatePerson } from "../utils/mockData";
 
 const router = useRouter();
-const starredMessages = computed(() => mockMessages.filter((m) => m.starred));
+const starredMessages = computed(() => getAllMessages().filter((m) => m.starred));
 
 function openThread(id: string) {
   router.push(`/thread/${id}`);
+}
+
+function toggleStar(msg: any) {
+  const person = mockPeople.find((p) => p.messages.some((m) => m.id === msg.id));
+  if (person) {
+    const messageIndex = person.messages.findIndex((m) => m.id === msg.id);
+    if (messageIndex !== -1) {
+      person.messages[messageIndex].starred = !person.messages[messageIndex].starred;
+      updatePerson(person.id, { messages: person.messages });
+    }
+  }
 }
 </script>
 
@@ -26,8 +37,8 @@ function openThread(id: string) {
           :class="msg.unread ? 'list-row-unread' : 'list-row-read'"
           @click="openThread(msg.id)"
         >
-          <div class="row-cell row-cell-star">
-            <button class="star-btn star-btn-active focus-ring" aria-label="Unstar">★</button>
+          <div class="row-cell row-cell-star" @click.stop>
+            <button class="star-btn star-btn-active focus-ring" :aria-label="msg.starred ? 'Unstar' : 'Star'" @click="toggleStar(msg)">★</button>
           </div>
           <div class="row-cell row-cell-from">{{ msg.from }}</div>
           <div class="row-cell row-cell-content">

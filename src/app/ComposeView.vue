@@ -2,6 +2,8 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
+import { addMessageToPerson } from "../utils/mockData";
+import type { Message } from "../utils/types";
 
 const router = useRouter();
 const { showToast } = useToast();
@@ -11,17 +13,69 @@ const subject = ref("");
 const body = ref("");
 const minimized = ref(false);
 
+function generateId(): string {
+  return `msg_${Date.now()}`;
+}
+
 function send() {
   if (!to.value || !subject.value || !body.value) {
     showToast("Please fill all fields");
     return;
   }
+
+  const newMessage: Message = {
+    id: generateId(),
+    from: "me@example.com",
+    fromInitials: "ME",
+    to: to.value,
+    subject: subject.value,
+    snippet: body.value.substring(0, 100) + (body.value.length > 100 ? "..." : ""),
+    body: body.value,
+    timestamp: "Just now",
+    unread: false,
+    starred: false,
+  };
+
+  addMessageToPerson(newMessage, "me@example.com");
   showToast("Message sent");
-  router.push("/sent");
+  to.value = "";
+  subject.value = "";
+  body.value = "";
+  router.push("/");
+}
+
+function saveDraft() {
+  if (!to.value && !subject.value && !body.value) {
+    discard();
+    return;
+  }
+
+  const draftMessage: Message = {
+    id: generateId(),
+    from: "me@example.com",
+    fromInitials: "ME",
+    to: to.value || "",
+    subject: subject.value || "(No subject)",
+    snippet: body.value.substring(0, 100) + (body.value.length > 100 ? "..." : ""),
+    body: body.value,
+    timestamp: "Draft",
+    unread: false,
+    starred: false,
+  };
+
+  addMessageToPerson(draftMessage, "me@example.com");
+  showToast("Draft saved");
+  router.back();
 }
 
 function discard() {
-  router.back();
+  if (to.value || subject.value || body.value) {
+    if (confirm("Discard this message?")) {
+      router.back();
+    }
+  } else {
+    router.back();
+  }
 }
 
 function toggleMinimize() {
@@ -45,7 +99,7 @@ function toggleMinimize() {
             <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
           </svg>
         </button>
-        <button class="compose-header-btn focus-ring" aria-label="Close" @click="discard">
+        <button class="compose-header-btn focus-ring" aria-label="Close" @click="saveDraft">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
           </svg>

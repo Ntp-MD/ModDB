@@ -194,6 +194,10 @@
   flex-shrink: 0;
 }
 
+.nav-icon img {
+  object-fit: contain;
+}
+
 .nav-label {
   white-space: nowrap;
   overflow: hidden;
@@ -309,6 +313,7 @@
 .list-row {
   display: flex;
   align-items: center;
+  gap: var(--space-sm);
   position: relative;
   background: var(--bg-color-surface);
   border-bottom: 1px solid var(--border-color-subtle);
@@ -352,7 +357,7 @@
   align-items: center;
   flex-shrink: 0;
   height: 100%;
-  gap: 3px;
+  gap: var(--space-xs);
 }
 
 .row-cell-checkbox {
@@ -379,7 +384,6 @@
 }
 
 .row-cell-from {
-  width: 120px;
   font-weight: inherit;
   white-space: nowrap;
   overflow: hidden;

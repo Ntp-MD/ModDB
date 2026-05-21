@@ -1,210 +1,162 @@
 import type { Person, Message } from "./types";
 
-export const mockPeople: Person[] = [
+let personIdCounter = 1;
+let messageIdCounter = 1;
+
+const STORAGE_KEY = "moddb_people";
+
+export function generatePersonId(): string {
+  return `${personIdCounter++}`;
+}
+
+export function generateMessageId(): string {
+  return `msg_${messageIdCounter++}`;
+}
+
+export function generateInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .substring(0, 2);
+}
+
+export const defaultMockPeople: Person[] = [
   {
-    id: "1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    role: "Product Designer",
-    company: "Figma",
+    id: generatePersonId(),
+    name: "Poorichaya Songsriboonsit",
+    email: "businessconsultant297@itopplus.com",
+    role: "Account Manager",
+    company: "ITOPPLUS",
     label: "blue",
-    labelText: "Design",
+    labelText: "DMS",
     starred: true,
     unread: true,
-    initials: "AJ",
     lastContact: "10:30 AM",
     snippet: "Here are the updated design specs for review.",
+    messages: [
+      {
+        id: generateMessageId(),
+        from: "Poorichaya Songsriboonsit",
+        fromInitials: generateInitials("Poorichaya Songsriboonsit"),
+        to: "me@example.com",
+        subject: "Updated Design Specs",
+        snippet: "Here are the updated design specs for review.",
+        body: "Hi,\n\nI have attached the updated design specs for the new dashboard. Please review and let me know if any changes are needed.\n\nBest,\nPoorichaya",
+        timestamp: "10:30 AM",
+        unread: true,
+        starred: true,
+        label: "blue",
+        labelText: "DMS",
+      },
+    ],
+    social: {
+      facebook: "https://facebook.com/",
+      instagram: "https://instagram.com/ychrp?",
+      linkedin: "https://linkedin.com/in/poorichaya-songsriboonsit",
+    },
   },
   {
-    id: "2",
-    name: "Bob Martinez",
-    email: "bob@startup.io",
-    role: "Backend Engineer",
-    company: "Startup.io",
-    label: "green",
-    labelText: "Engineering",
-    starred: false,
-    unread: false,
-    initials: "BM",
-    lastContact: "Yesterday",
-    snippet: "The API endpoints are now live in staging.",
-  },
-  {
-    id: "3",
-    name: "Carol Smith",
-    email: "carol@agency.co",
-    role: "Marketing Lead",
-    company: "Agency Co.",
-    label: "yellow",
-    labelText: "Marketing",
-    starred: false,
-    unread: true,
-    initials: "CS",
-    lastContact: "May 18",
-    snippet: "Campaign results exceeded Q2 targets by 23%.",
-  },
-  {
-    id: "4",
-    name: "David Kim",
-    email: "david@corp.com",
-    role: "VP of Sales",
-    company: "Corp Inc.",
-    label: "red",
-    labelText: "Sales",
-    starred: true,
-    unread: false,
-    initials: "DK",
-    lastContact: "May 15",
-    snippet: "Closing the enterprise deal next Friday.",
-  },
-  {
-    id: "5",
-    name: "Eva Chen",
-    email: "eva@labs.dev",
-    role: "ML Engineer",
-    company: "Labs Dev",
+    id: generatePersonId(),
+    name: "Nuttikarn Rodthong",
+    email: "service19@itopplus.com",
+    role: "Digital Marketing Consultant",
+    company: "ITOPPLUS",
     label: "blue",
-    labelText: "Research",
-    starred: false,
+    labelText: "DMS",
+    starred: true,
     unread: true,
-    initials: "EC",
-    lastContact: "May 12",
-    snippet: "The new model achieves 94% accuracy on the benchmark.",
-  },
-  {
-    id: "6",
-    name: "Frank Lee",
-    email: "frank@consultancy.biz",
-    role: "Strategy Consultant",
-    company: "Consultancy Biz",
-    label: "green",
-    labelText: "Strategy",
-    starred: false,
-    unread: false,
-    initials: "FL",
-    lastContact: "May 10",
-    snippet: "Roadmap for Q3 has been approved by the board.",
-  },
-];
-
-export const mockMessages: Message[] = [
-  {
-    id: "m1",
-    from: "Alice Johnson",
-    fromInitials: "AJ",
-    to: "me@example.com",
-    subject: "Updated Design Specs",
+    lastContact: "10:30 AM",
     snippet: "Here are the updated design specs for review.",
-    body: "Hi,\n\nI have attached the updated design specs for the new dashboard. Please review and let me know if any changes are needed.\n\nBest,\nAlice",
-    timestamp: "10:30 AM",
-    unread: true,
-    starred: true,
-    label: "blue",
-    labelText: "Design",
-  },
-  {
-    id: "m2",
-    from: "Bob Martinez",
-    fromInitials: "BM",
-    to: "me@example.com",
-    subject: "API Staging Deployment",
-    snippet: "The API endpoints are now live in staging.",
-    body: "The API is deployed to staging. Run the integration tests and let me know if you find any issues.",
-    timestamp: "Yesterday",
-    unread: false,
-    starred: false,
-    label: "green",
-    labelText: "Engineering",
-  },
-  {
-    id: "m3",
-    from: "Carol Smith",
-    fromInitials: "CS",
-    to: "me@example.com",
-    subject: "Q2 Campaign Results",
-    snippet: "Campaign results exceeded Q2 targets by 23%.",
-    body: "Great news! The Q2 marketing campaign exceeded all targets. Full report attached.",
-    timestamp: "May 18",
-    unread: true,
-    starred: false,
-    label: "yellow",
-    labelText: "Marketing",
-  },
-  {
-    id: "m4",
-    from: "David Kim",
-    fromInitials: "DK",
-    to: "me@example.com",
-    subject: "Enterprise Deal Update",
-    snippet: "Closing the enterprise deal next Friday.",
-    body: "We are on track to close the deal. The legal team has signed off on the terms.",
-    timestamp: "May 15",
-    unread: false,
-    starred: true,
-    label: "red",
-    labelText: "Sales",
-  },
-  {
-    id: "m5",
-    from: "Eva Chen",
-    fromInitials: "EC",
-    to: "me@example.com",
-    subject: "Model Benchmark Results",
-    snippet: "The new model achieves 94% accuracy on the benchmark.",
-    body: "Sharing the benchmark results from last week's experiments. The performance is significantly better.",
-    timestamp: "May 12",
-    unread: true,
-    starred: false,
-    label: "blue",
-    labelText: "Research",
-  },
-  {
-    id: "m6",
-    from: "Frank Lee",
-    fromInitials: "FL",
-    to: "me@example.com",
-    subject: "Q3 Roadmap Approved",
-    snippet: "Roadmap for Q3 has been approved by the board.",
-    body: "The board approved the Q3 strategic roadmap yesterday. Execution begins June 1.",
-    timestamp: "May 10",
-    unread: false,
-    starred: false,
-    label: "green",
-    labelText: "Strategy",
-  },
-  {
-    id: "m7",
-    from: "Alice Johnson",
-    fromInitials: "AJ",
-    to: "me@example.com",
-    subject: "Component Library Update",
-    snippet: "New icon set and token updates are live.",
-    body: "The component library has been updated with the new icon set and design tokens. Changelog attached.",
-    timestamp: "May 8",
-    unread: false,
-    starred: false,
-  },
-  {
-    id: "m8",
-    from: "Bob Martinez",
-    fromInitials: "BM",
-    to: "me@example.com",
-    subject: "Database Migration Plan",
-    snippet: "Migration scheduled for Saturday 2 AM UTC.",
-    body: "We will migrate the production database this Saturday. Downtime expected: 15 minutes.",
-    timestamp: "May 6",
-    unread: false,
-    starred: false,
-    label: "green",
-    labelText: "Engineering",
+    messages: [
+      {
+        id: generateMessageId(),
+        from: "Nuttikarn Rodthong",
+        fromInitials: generateInitials("Nuttikarn Rodthong"),
+        to: "me@example.com",
+        subject: "Marketing Campaign Report",
+        snippet: "Q2 marketing performance metrics attached.",
+        body: "Hi,\n\nPlease find attached the Q2 marketing campaign performance report. Let me know if you need any additional data.\n\nBest,\nNuttikarn",
+        timestamp: "9:15 AM",
+        unread: true,
+        starred: true,
+        label: "blue",
+        labelText: "DMS",
+      },
+    ],
+    social: {
+      facebook: "https://facebook.com/nuttikarn.r",
+      instagram: "https://instagram.com/nuttikarn.r",
+    },
   },
 ];
 
-export const mockSnoozedMessages: Message[] = [
+function loadFromStorage(): Person[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Failed to load from localStorage:", e);
+  }
+  return defaultMockPeople;
+}
+
+function saveToStorage(people: Person[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(people));
+  } catch (e) {
+    console.error("Failed to save to localStorage:", e);
+  }
+}
+
+export const mockPeople = loadFromStorage();
+
+export const getAllMessages = (): Message[] => {
+  return mockPeople.flatMap((person: Person) => person.messages);
+};
+
+export const getDraftMessages = (): Message[] => {
+  const me = mockPeople.find((person: Person) => person.email === "me@example.com");
+  return me ? me.messages : [];
+};
+
+export function addMessageToPerson(message: Message, personEmail: string = "me@example.com"): void {
+  const person = mockPeople.find((p: Person) => p.email === personEmail);
+  if (person) {
+    person.messages.push(message);
+    saveToStorage(mockPeople);
+  }
+}
+
+export function addPerson(person: Person): void {
+  mockPeople.push(person);
+  saveToStorage(mockPeople);
+}
+
+export function updatePerson(id: string, updates: Partial<Person>): void {
+  const person = mockPeople.find((p: Person) => p.id === id);
+  if (person) {
+    Object.assign(person, updates);
+    saveToStorage(mockPeople);
+  }
+}
+
+export function deletePerson(id: string): void {
+  const index = mockPeople.findIndex((p: Person) => p.id === id);
+  if (index !== -1) {
+    mockPeople.splice(index, 1);
+    saveToStorage(mockPeople);
+  }
+}
+
+export const defaultMockSnoozedMessages: Message[] = [
   {
-    id: "s1",
+    id: generateMessageId(),
     from: "Grace Liu",
-    fromInitials: "GL",
+    fromInitials: generateInitials("Grace Liu"),
     to: "me@example.com",
     subject: "Budget Review Meeting",
     snippet: "Rescheduled for next Monday at 2 PM.",
@@ -213,12 +165,12 @@ export const mockSnoozedMessages: Message[] = [
     unread: false,
     starred: false,
     label: "yellow",
-    labelText: "Finance",
+    labelText: "Plusventure",
   },
   {
-    id: "s2",
+    id: generateMessageId(),
     from: "Henry Wang",
-    fromInitials: "HW",
+    fromInitials: generateInitials("Henry Wang"),
     to: "me@example.com",
     subject: "Performance Review",
     snippet: "Q2 review scheduled for next week.",
@@ -226,34 +178,44 @@ export const mockSnoozedMessages: Message[] = [
     timestamp: "May 20",
     unread: false,
     starred: false,
-    label: "blue",
+    label: "red",
     labelText: "HR",
   },
 ];
 
-export const mockDraftMessages: Message[] = [
-  {
-    id: "d1",
-    from: "me@example.com",
-    fromInitials: "ME",
-    to: "team@company.com",
-    subject: "Weekly Update - Week 20",
-    snippet: "Draft: Progress on key deliverables...",
-    body: "Team,\n\nHere's our weekly update for Week 20:\n\n1. Project Alpha: On track\n2. Project Beta: Delayed by 2 days\n3. Project Gamma: Completed\n\n[Draft - not sent]",
-    timestamp: "Draft",
-    unread: false,
-    starred: false,
-  },
-  {
-    id: "d2",
-    from: "me@example.com",
-    fromInitials: "ME",
-    to: "client@external.com",
-    subject: "Proposal for Phase 2",
-    snippet: "Draft: Attached is the revised proposal...",
-    body: "Dear Client,\n\nPlease find attached the revised proposal for Phase 2 of our engagement. We've incorporated your feedback from the last call.\n\n[Draft - not sent]",
-    timestamp: "Draft",
-    unread: false,
-    starred: false,
-  },
-];
+const SNOOZED_STORAGE_KEY = "moddb_snoozed";
+
+function loadSnoozedFromStorage(): Message[] {
+  try {
+    const stored = localStorage.getItem(SNOOZED_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Failed to load snoozed from localStorage:", e);
+  }
+  return defaultMockSnoozedMessages;
+}
+
+function saveSnoozedToStorage(messages: Message[]): void {
+  try {
+    localStorage.setItem(SNOOZED_STORAGE_KEY, JSON.stringify(messages));
+  } catch (e) {
+    console.error("Failed to save snoozed to localStorage:", e);
+  }
+}
+
+export const mockSnoozedMessages = loadSnoozedFromStorage();
+
+export function addSnoozedMessage(message: Message): void {
+  mockSnoozedMessages.push(message);
+  saveSnoozedToStorage(mockSnoozedMessages);
+}
+
+export function deleteSnoozedMessage(id: string): void {
+  const index = mockSnoozedMessages.findIndex((m) => m.id === id);
+  if (index !== -1) {
+    mockSnoozedMessages.splice(index, 1);
+    saveSnoozedToStorage(mockSnoozedMessages);
+  }
+}

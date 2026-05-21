@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { mockDraftMessages } from "../utils/mockData";
+import { getDraftMessages } from "../utils/mockData";
 
 const router = useRouter();
-const draftMessages = computed(() => mockDraftMessages);
+const draftMessages = computed(() => getDraftMessages());
 
 function openThread(id: string) {
   router.push(`/thread/${id}`);
@@ -19,12 +19,7 @@ function openThread(id: string) {
       </div>
 
       <section class="inbox-list fade-in" aria-label="Draft messages">
-        <div
-          v-for="msg in draftMessages"
-          :key="msg.id"
-          class="list-row hover-row"
-          @click="openThread(msg.id)"
-        >
+        <div v-for="msg in draftMessages" :key="msg.id" class="list-row hover-row" @click="openThread(msg.id)">
           <div class="row-cell row-cell-star">
             <button class="star-btn focus-ring" aria-label="Draft" aria-disabled="true">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

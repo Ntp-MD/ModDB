@@ -3,16 +3,20 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
 import { useSearch } from "../hooks/useSearch";
-import { mockMessages } from "../utils/mockData";
+import { getAllMessages, mockPeople, updatePerson } from "../utils/mockData";
 import type { Message } from "../utils/types";
 
 const router = useRouter();
 const { showToast } = useToast();
 const { searchQuery, activeLabel } = useSearch();
 
-const messages = ref<Message[]>([...mockMessages]);
+const messages = ref<Message[]>([...getAllMessages()]);
 const selectedIds = ref<Set<string>>(new Set());
 const activeTab = ref("primary");
+
+function reloadMessages() {
+  messages.value = [...getAllMessages()];
+}
 
 const tabs = [
   { id: "primary", label: "Primary" },
@@ -65,11 +69,31 @@ function toggleSelect(id: string) {
 
 function toggleStar(msg: Message) {
   msg.starred = !msg.starred;
+  const person = mockPeople.find((p) => p.messages.some((m) => m.id === msg.id));
+  if (person) {
+    const messageIndex = person.messages.findIndex((m) => m.id === msg.id);
+    if (messageIndex !== -1) {
+      person.messages[messageIndex].starred = msg.starred;
+      updatePerson(person.id, { messages: person.messages });
+      reloadMessages();
+    }
+  }
 }
 
 function markRead(id: string) {
   const msg = messages.value.find((m) => m.id === id);
-  if (msg) msg.unread = false;
+  if (msg) {
+    msg.unread = false;
+    const person = mockPeople.find((p) => p.messages.some((m) => m.id === msg.id));
+    if (person) {
+      const messageIndex = person.messages.findIndex((m) => m.id === msg.id);
+      if (messageIndex !== -1) {
+        person.messages[messageIndex].unread = false;
+        updatePerson(person.id, { messages: person.messages });
+        reloadMessages();
+      }
+    }
+  }
 }
 
 function deleteMessage(id: string) {
@@ -254,8 +278,10 @@ function openThread(msg: Message) {
               d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2v6zm0-10.5l-8 5-8-5V6l8 5 8-5v1.5z"
             />
           </svg>
-          <h2 class="empty-state-title">{{ searchQuery || activeLabel ? "No results found" : "Your inbox is empty" }}</h2>
-          <p class="empty-state-text">{{ searchQuery || activeLabel ? "Try different search terms or filters" : "No messages to display." }}</p>
+          <h2 class="empty-state-title">{{ activeLabel ? "No messages found" : searchQuery ? "No results found" : "Your inbox is empty" }}</h2>
+          <p class="empty-state-text">
+            {{ activeLabel ? "No messages with this label" : searchQuery ? "Try different search terms or filters" : "No messages to display." }}
+          </p>
         </div>
       </section>
     </div>
@@ -343,5 +369,279 @@ function openThread(msg: Message) {
   overflow: hidden;
   height: 100%;
   max-height: 75vh;
+}
+
+/* List / Table Row */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  position: relative;
+  background: var(--bg-color-surface);
+  border-bottom: 1px solid var(--border-color-subtle);
+  padding: 0 var(--space-md);
+  height: var(--row-height-comfortable);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.list-row:hover {
+  background: var(--bg-color-row-hover);
+}
+
+.list-row-unread {
+  background: var(--bg-color-unread);
+  font-weight: 600;
+  color: var(--font-color-primary);
+}
+
+.list-row-read {
+  background: var(--bg-color-surface);
+  font-weight: 400;
+  color: var(--font-color-secondary);
+}
+
+.list-row-selected {
+  background: var(--bg-color-selected);
+}
+
+/* Row Cells */
+.row-cell {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 100%;
+  gap: var(--space-xs);
+}
+
+.row-cell-checkbox {
+  width: 40px;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.row-cell-star {
+  width: 28px;
+  justify-content: center;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.list-row:hover .row-cell-checkbox,
+.list-row-selected .row-cell-checkbox {
+  opacity: 1;
+}
+
+.list-row:hover .row-cell-star {
+  opacity: 1;
+}
+
+.row-cell-from {
+  font-weight: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-cell-content {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-cell-content .subject {
+  font-weight: inherit;
+}
+
+.row-cell-content .snippet {
+  color: var(--font-color-secondary);
+  font-weight: 400;
+}
+
+.row-cell-timestamp {
+  width: 80px;
+  justify-content: flex-end;
+  font-size: var(--font-xs);
+  color: var(--font-color-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.row-cell-actions {
+  position: absolute;
+  right: var(--space-md);
+  top: 0;
+  height: 100%;
+  align-items: center;
+  background: var(--bg-color-row-hover);
+  display: none;
+  gap: 0;
+  padding-left: var(--space-sm);
+}
+
+.list-row:hover .row-cell-actions {
+  display: flex;
+}
+
+.list-row:hover .row-cell-timestamp {
+  visibility: hidden;
+}
+
+.row-actions {
+  display: flex;
+}
+
+.row-action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  background: transparent;
+  border: none;
+  color: var(--font-color-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.row-action-btn:hover {
+  background: var(--bg-color-row-hover);
+  color: var(--font-color-primary);
+}
+
+/* Selection Checkbox */
+.row-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--font-color-muted);
+  border-radius: 2px;
+  appearance: none;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.row-checkbox:checked {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+/* Star Toggle */
+.star-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--font-color-muted);
+  cursor: pointer;
+  font-size: 18px;
+  transition: color var(--transition-fast);
+}
+
+.star-btn:hover {
+  color: var(--font-color-secondary);
+}
+
+.star-btn-active {
+  color: #f9ab00;
+}
+
+/* Badge / Label */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-xs);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  letter-spacing: 0.25px;
+}
+
+.badge-label-red {
+  background: var(--label-red);
+  color: var(--font-color-white);
+}
+
+.badge-label-yellow {
+  background: var(--label-yellow);
+  color: var(--font-color-white);
+}
+
+.badge-label-green {
+  background: var(--label-green);
+  color: var(--font-color-white);
+}
+
+.badge-label-blue {
+  background: var(--label-blue);
+  color: var(--font-color-white);
+}
+
+/* Mobile responsive */
+@media (max-width: 599px) {
+  .list-row {
+    padding: 0 var(--space-sm);
+    height: var(--row-height-cozy);
+  }
+
+  .row-cell-from {
+    width: 100px;
+  }
+
+  .row-cell-timestamp {
+    width: 60px;
+  }
+
+  .row-cell-content .snippet {
+    display: none;
+  }
+
+  .inbox-list {
+    max-height: calc(100vh - 200px);
+  }
+
+  .hide-mobile {
+    display: none;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--font-color-muted);
+}
+
+.empty-state-icon {
+  width: 120px;
+  height: 120px;
+  opacity: 0.3;
+}
+
+.empty-state-title {
+  font-size: var(--font-lg);
+  font-weight: 500;
+  color: var(--font-color-primary);
+}
+
+.empty-state-text {
+  font-size: var(--font-sm);
+  color: var(--font-color-secondary);
 }
 </style>
