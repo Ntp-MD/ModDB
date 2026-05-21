@@ -2,7 +2,8 @@
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
-import { getAllMessages, mockPeople } from "../utils/mockData";
+import { getCachedMessages, getPeople, refreshData } from "../utils/supabase-data";
+import { supabase } from "../utils/supabase";
 
 const route = useRoute();
 const router = useRouter();
@@ -10,25 +11,43 @@ const { showToast } = useToast();
 const replyText = ref("");
 const replyFocused = ref(false);
 
-const message = computed(() => getAllMessages().find((m) => m.id === route.params.id));
+const message = computed(() => getCachedMessages().find((m) => m.id === route.params.id));
 
 const person = computed(() => {
   if (!message.value) return null;
-  return mockPeople.find((p) => p.messages.some((m) => m.id === message.value?.id));
+  return getPeople().find((p) => p.messages.some((m) => m.id === message.value?.id));
 });
 
 function goBack() {
   router.back();
 }
 
-function deleteMessage() {
-  showToast("Conversation moved to Trash", "Undo");
-  router.push("/");
+async function deleteMessage() {
+  try {
+    const { error } = await supabase.from("messages").delete().eq("id", message.value?.id);
+    if (!error) {
+      await refreshData();
+      showToast("Conversation moved to Trash", "Undo");
+      router.push("/");
+    }
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    showToast("Failed to delete message", "Error");
+  }
 }
 
-function archiveMessage() {
-  showToast("Conversation archived", "Undo");
-  router.push("/");
+async function archiveMessage() {
+  try {
+    const { error } = await supabase.from("messages").delete().eq("id", message.value?.id);
+    if (!error) {
+      await refreshData();
+      showToast("Conversation archived", "Undo");
+      router.push("/");
+    }
+  } catch (error) {
+    console.error("Error archiving message:", error);
+    showToast("Failed to archive message", "Error");
+  }
 }
 </script>
 
@@ -85,15 +104,15 @@ function archiveMessage() {
         <div class="thread fade-in">
           <div class="thread-message">
             <div class="thread-msg-header">
-              <div class="thread-avatar" aria-hidden="true">
-                {{ message.fromInitials }}
+              <div class="thread-avatar" :class="`thread-avatar--${message.label || 'blue'}`" aria-hidden="true">
+                {{ message.from_initials }}
               </div>
               <div class="thread-meta">
                 <div class="thread-meta-row">
-                  <span class="thread-from">{{ message.from }}</span>
+                  <span class="thread-from">{{ message.msg_from }}</span>
                   <span class="thread-timestamp">{{ message.timestamp }}</span>
                 </div>
-                <div class="thread-to">to {{ message.to }}</div>
+                <div class="thread-to">to {{ message.msg_to }}</div>
               </div>
               <div class="thread-msg-actions">
                 <button class="btn-icon-only focus-ring" aria-label="Reply">
@@ -194,24 +213,18 @@ function archiveMessage() {
 </template>
 
 <style scoped>
-.thread-subject {
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--font-color-primary);
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-left: var(--space-sm);
-}
-
 .thread-toolbar-actions {
   display: flex;
   align-items: center;
   gap: 0;
   margin-left: auto;
   flex-shrink: 0;
+}
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 
 .thread-message {
@@ -243,6 +256,27 @@ function archiveMessage() {
   flex-shrink: 0;
 }
 
+/* Thread avatar colors based on labels */
+.thread-avatar--blue {
+  background: var(--label-blue, #1e88e5);
+}
+
+.thread-avatar--yellow {
+  background: var(--label-yellow, #f57c00);
+}
+
+.thread-avatar--green {
+  background: var(--label-green, #43a047);
+}
+
+.thread-avatar--red {
+  background: var(--label-red, #e53935);
+}
+
+.thread-avatar--purple {
+  background: var(--label-purple, #8e24aa);
+}
+
 .thread-meta {
   flex: 1;
   min-width: 0;
@@ -265,6 +299,13 @@ function archiveMessage() {
   font-size: var(--font-xs);
   color: var(--font-color-muted);
   margin-top: 2px;
+}
+
+.thread-timestamp {
+  font-size: var(--font-xs);
+  color: var(--font-color-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .thread-social-links {
@@ -470,16 +511,5 @@ function archiveMessage() {
   padding: var(--space-xl);
   text-align: center;
   color: var(--font-color-muted);
-}
-
-.empty-state-title {
-  font-size: var(--font-lg);
-  font-weight: 500;
-  color: var(--font-color-primary);
-}
-
-.empty-state-text {
-  font-size: var(--font-sm);
-  color: var(--font-color-secondary);
 }
 </style>

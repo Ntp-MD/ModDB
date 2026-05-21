@@ -1,19 +1,16 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Person } from "../utils/types";
-import { generateInitials, mockPeople, updatePerson, getLabelText } from "../utils/mockData";
+import { generateInitials, updatePerson, getLabelText } from "../utils/supabase-data";
 
 const props = defineProps<{ person: Person }>();
+const emit = defineEmits<{ edit: [person: Person]; delete: [id: string] }>();
 
 const initials = computed(() => props.person.initials || generateInitials(props.person.name));
 const labelText = computed(() => props.person.labelText || getLabelText(props.person.label));
 
 function toggleStar() {
-  const person = mockPeople.find((p) => p.id === props.person.id);
-  if (person) {
-    person.starred = !person.starred;
-    updatePerson(person.id, { starred: person.starred });
-  }
+  updatePerson(props.person.id, { starred: !props.person.starred });
 }
 </script>
 
@@ -52,6 +49,20 @@ function toggleStar() {
 
     <div class="card-person-footer">
       <span class="badge" :class="`badge-label-${person.label}`">{{ labelText }}</span>
+      <div class="card-person-actions">
+        <button class="card-person-btn btn-icon-only focus-ring" aria-label="Edit" @click.stop="emit('edit', person)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+            />
+          </svg>
+        </button>
+        <button class="card-person-btn btn-icon-only focus-ring" aria-label="Delete" @click.stop="emit('delete', person.id)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+          </svg>
+        </button>
+      </div>
     </div>
   </article>
 </template>

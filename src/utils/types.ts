@@ -6,6 +6,24 @@ export interface NavItem {
   count?: number;
 }
 
+export interface Message {
+  id: string;
+  person_id?: string;
+  msg_from: string;
+  from_initials: string;
+  msg_to: string;
+  subject: string;
+  snippet: string;
+  body: string;
+  timestamp: string;
+  unread: boolean;
+  starred: boolean;
+  label?: "red" | "yellow" | "green" | "blue" | "purple";
+  labelText?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Person {
   id: string;
   name: string;
@@ -25,20 +43,8 @@ export interface Person {
     facebook?: string;
     instagram?: string;
     linkedin?: string;
+    github?: string;
   };
-}
-
-export interface Message {
-  id: string;
-  from: string;
-  fromInitials: string;
-  to: string;
-  subject: string;
-  snippet: string;
-  body: string;
-  timestamp: string;
-  unread: boolean;
-  starred: boolean;
-  label?: "red" | "yellow" | "green" | "blue" | "purple";
-  labelText?: string;
+  created_at?: string;
+  updated_at?: string;
 }

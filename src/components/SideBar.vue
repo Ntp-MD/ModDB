@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useSidebar } from "../hooks/useSidebar";
 import { useSearch } from "../hooks/useSearch";
-import { mockPeople, resetToDefaultData } from "../utils/mockData";
+import { getPeople, getCachedMessages, resetToDefaultData } from "../utils/supabase-data";
 import inboxIcon from "../assets/icons/inbox.png";
 import starIcon from "../assets/icons/star.png";
 import snoozeIcon from "../assets/icons/bin.png";
@@ -17,19 +17,19 @@ const { sidebarOpen, closeSidebar } = useSidebar();
 const { activeLabel, setActiveLabel, clearSearch } = useSearch();
 
 const navItems = computed(() => {
-  const allMessages = mockPeople.flatMap((person) => person.messages);
+  const allMessages = getCachedMessages();
+  const allPeople = getPeople();
   const unreadCount = allMessages.filter((msg) => msg.unread).length;
   const starredCount = allMessages.filter((msg) => msg.starred).length;
-  const sentCount = allMessages.filter((msg) => msg.from === "me@example.com").length;
-  const draftCount = allMessages.filter((msg) => msg.timestamp === "Draft").length;
-  const binCount = mockPeople.filter((p) => p.email !== "me@example.com").length;
-  const contactsCount = mockPeople.length;
+  const sentCount = allMessages.filter((msg) => msg.msg_to === "me@example.com").length;
+  const binCount = allMessages.filter((msg) => !msg.unread).length;
+  const contactsCount = allPeople.length;
 
   return [
     { id: "inbox", label: "Inbox", route: "/", icon: "inbox", count: unreadCount },
     { id: "starred", label: "Starred", route: "/starred", icon: "star", count: starredCount },
     { id: "sent", label: "Sent", route: "/sent", icon: "send", count: sentCount },
-    { id: "drafts", label: "Drafts", route: "/drafts", icon: "draft", count: draftCount },
+    { id: "drafts", label: "Drafts", route: "/drafts", icon: "draft", count: 0 },
     { id: "bin", label: "Bin", route: "/snoozed", icon: "snoozed", count: binCount },
     { id: "people", label: "Contacts", route: "/people", icon: "people", count: contactsCount },
   ];

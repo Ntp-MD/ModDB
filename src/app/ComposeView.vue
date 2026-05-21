@@ -2,8 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
-import { addMessageToPerson } from "../utils/mockData";
-import type { Message } from "../utils/types";
+import { supabase } from "../utils/supabase";
 
 const router = useRouter();
 const { showToast } = useToast();
@@ -17,17 +16,17 @@ function generateId(): string {
   return `msg_${Date.now()}`;
 }
 
-function send() {
+async function send() {
   if (!to.value || !subject.value || !body.value) {
     showToast("Please fill all fields");
     return;
   }
 
-  const newMessage: Message = {
+  const newMessage = {
     id: generateId(),
-    from: "me@example.com",
-    fromInitials: "ME",
-    to: to.value,
+    msg_from: "me@example.com",
+    from_initials: "ME",
+    msg_to: to.value,
     subject: subject.value,
     snippet: body.value.substring(0, 100) + (body.value.length > 100 ? "..." : ""),
     body: body.value,
@@ -36,25 +35,27 @@ function send() {
     starred: false,
   };
 
-  addMessageToPerson(newMessage, "me@example.com");
-  showToast("Message sent");
-  to.value = "";
-  subject.value = "";
-  body.value = "";
-  router.push("/");
+  const { error } = await supabase.from("messages").insert(newMessage);
+  if (!error) {
+    showToast("Message sent");
+    to.value = "";
+    subject.value = "";
+    body.value = "";
+    router.push("/");
+  }
 }
 
-function saveDraft() {
+async function saveDraft() {
   if (!to.value && !subject.value && !body.value) {
     discard();
     return;
   }
 
-  const draftMessage: Message = {
+  const draftMessage = {
     id: generateId(),
-    from: "me@example.com",
-    fromInitials: "ME",
-    to: to.value || "",
+    msg_from: "me@example.com",
+    from_initials: "ME",
+    msg_to: to.value || "",
     subject: subject.value || "(No subject)",
     snippet: body.value.substring(0, 100) + (body.value.length > 100 ? "..." : ""),
     body: body.value,
@@ -63,9 +64,11 @@ function saveDraft() {
     starred: false,
   };
 
-  addMessageToPerson(draftMessage, "me@example.com");
-  showToast("Draft saved");
-  router.back();
+  const { error } = await supabase.from("messages").insert(draftMessage);
+  if (!error) {
+    showToast("Draft saved");
+    router.back();
+  }
 }
 
 function discard() {
@@ -201,17 +204,6 @@ function toggleMinimize() {
   cursor: pointer;
   user-select: none;
   flex-shrink: 0;
-}
-
-.compose-header-title {
-  font-size: var(--font-sm);
-  font-weight: 600;
-  color: #ffffff;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .compose-header-actions {

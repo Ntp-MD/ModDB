@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { mockSnoozedMessages, getLabelText } from "../utils/mockData";
+import { getCachedMessages, getLabelText } from "../utils/supabase-data";
 
 const router = useRouter();
-const snoozedMessages = computed(() => mockSnoozedMessages);
+const snoozedMessages = computed(() => {
+  const allMessages = getCachedMessages();
+  return allMessages.filter((msg) => msg.unread === false);
+});
 
 function openThread(id: string) {
   router.push(`/thread/${id}`);
@@ -15,7 +18,7 @@ function openThread(id: string) {
   <main class="main-content">
     <div class="main-content-inner">
       <div class="bin-toolbar main-toolbar">
-        <h1 class="bin-title">Bin</h1>
+        <h1 class="page-title">Bin</h1>
       </div>
 
       <section class="inbox-list fade-in" aria-label="Bin messages">
@@ -35,7 +38,7 @@ function openThread(id: string) {
               </svg>
             </button>
           </div>
-          <div class="row-cell row-cell-from">{{ msg.from }}</div>
+          <div class="row-cell row-cell-from">{{ msg.msg_from }}</div>
           <div class="row-cell row-cell-content">
             <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText || getLabelText(msg.label) }}</span>
             <span class="subject">{{ msg.subject }}</span>
@@ -58,20 +61,4 @@ function openThread(id: string) {
   </main>
 </template>
 
-<style scoped>
-.bin-title {
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--font-color-primary);
-  line-height: 1.3;
-  margin-left: var(--space-sm);
-}
-
-.inbox-list {
-  background: var(--bg-color-surface);
-  border: 1px solid var(--border-color-subtle);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-top: var(--space-xs);
-}
-</style>
+<style scoped></style>

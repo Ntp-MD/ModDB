@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { getDraftMessages } from "../utils/mockData";
+import { getCachedMessages, refreshData } from "../utils/supabase-data";
 
 const router = useRouter();
-const draftMessages = computed(() => getDraftMessages());
+const draftMessages = ref<any[]>([]);
+const loading = ref(true);
+
+onMounted(async () => {
+  draftMessages.value = getCachedMessages().filter((m) => m.timestamp === "Draft");
+  await refreshData();
+  draftMessages.value = getCachedMessages().filter((m) => m.timestamp === "Draft");
+  loading.value = false;
+});
 
 function openThread(id: string) {
   router.push(`/thread/${id}`);
@@ -15,7 +23,7 @@ function openThread(id: string) {
   <main class="main-content">
     <div class="main-content-inner">
       <div class="drafts-toolbar main-toolbar">
-        <h1 class="drafts-title">Drafts</h1>
+        <h1 class="page-title">Drafts</h1>
       </div>
 
       <section class="inbox-list fade-in" aria-label="Draft messages">
@@ -27,7 +35,7 @@ function openThread(id: string) {
               </svg>
             </button>
           </div>
-          <div class="row-cell row-cell-from">{{ msg.to }}</div>
+          <div class="row-cell row-cell-from">{{ msg.msg_to }}</div>
           <div class="row-cell row-cell-content">
             <span class="subject">{{ msg.subject }}</span>
             <span class="snippet hide-mobile"> — {{ msg.snippet }}</span>
@@ -47,20 +55,4 @@ function openThread(id: string) {
   </main>
 </template>
 
-<style scoped>
-.drafts-title {
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--font-color-primary);
-  line-height: 1.3;
-  margin-left: var(--space-sm);
-}
-
-.inbox-list {
-  background: var(--bg-color-surface);
-  border: 1px solid var(--border-color-subtle);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-top: var(--space-xs);
-}
-</style>
+<style scoped></style>

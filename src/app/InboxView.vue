@@ -1,16 +1,29 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
 import { useSearch } from "../hooks/useSearch";
-import { getAllMessages, mockPeople, updatePerson, getLabelText } from "../utils/mockData";
+import { getCachedMessages, getLabelText, refreshData } from "../utils/supabase-data";
+import { supabase } from "../utils/supabase";
 import type { Message } from "../utils/types";
 
 const router = useRouter();
 const { showToast } = useToast();
 const { searchQuery, activeLabel } = useSearch();
 
-const messages = computed(() => [...getAllMessages()]);
+const messages = ref<Message[]>([]);
+const loading = ref(true);
+
+onMounted(async () => {
+  console.log("InboxView: onMounted - loading messages");
+  messages.value = getCachedMessages();
+  console.log("InboxView: Initial messages count:", messages.value.length);
+  await refreshData();
+  messages.value = getCachedMessages();
+  console.log("InboxView: After refresh, messages count:", messages.value.length);
+  console.log("InboxView: Messages:", messages.value);
+  loading.value = false;
+});
 const selectedIds = ref<Set<string>>(new Set());
 const activeTab = ref("primary");
 
@@ -30,8 +43,8 @@ const filteredMessages = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     result = result.filter(
-      (msg) =>
-        msg.from.toLowerCase().includes(query) ||
+      (msg: Message) =>
+        msg.msg_from.toLowerCase().includes(query) ||
         msg.subject.toLowerCase().includes(query) ||
         msg.snippet.toLowerCase().includes(query) ||
         msg.body.toLowerCase().includes(query),
@@ -63,59 +76,48 @@ function toggleSelect(id: string) {
   selectedIds.value = new Set(selectedIds.value);
 }
 
-function toggleStar(msg: Message) {
+async function toggleStar(msg: Message) {
   msg.starred = !msg.starred;
-  const person = mockPeople.find((p) => p.messages.some((m) => m.id === msg.id));
-  if (person) {
-    const messageIndex = person.messages.findIndex((m) => m.id === msg.id);
-    if (messageIndex !== -1) {
-      person.messages[messageIndex].starred = msg.starred;
-      updatePerson(person.id, { messages: person.messages });
-    }
+  // Update in Supabase messages table
+  const { error } = await supabase.from("messages").update({ starred: msg.starred }).eq("id", msg.id);
+  if (!error) {
+    await refreshData();
+    messages.value = getCachedMessages();
   }
 }
 
-function markRead(id: string) {
+async function markRead(id: string) {
   const msg = messages.value.find((m) => m.id === id);
   if (msg) {
     msg.unread = false;
-    const person = mockPeople.find((p) => p.messages.some((m) => m.id === msg.id));
-    if (person) {
-      const messageIndex = person.messages.findIndex((m) => m.id === msg.id);
-      if (messageIndex !== -1) {
-        person.messages[messageIndex].unread = false;
-        updatePerson(person.id, { messages: person.messages });
-      }
+    const { error } = await supabase.from("messages").update({ unread: false }).eq("id", id);
+    if (!error) {
+      await refreshData();
+      messages.value = getCachedMessages();
     }
   }
 }
 
-function deleteMessage(id: string) {
-  const person = mockPeople.find((p) => p.messages.some((m) => m.id === id));
-  if (person) {
-    const messageIndex = person.messages.findIndex((m) => m.id === id);
-    if (messageIndex !== -1) {
-      person.messages.splice(messageIndex, 1);
-      updatePerson(person.id, { messages: person.messages });
-    }
+async function deleteMessage(id: string) {
+  const { error } = await supabase.from("messages").delete().eq("id", id);
+  if (!error) {
+    await refreshData();
+    messages.value = getCachedMessages();
+    showToast("Conversation moved to Trash", "Undo");
   }
-  showToast("Conversation moved to Trash", "Undo");
 }
 
-function archiveMessage(id: string) {
-  const person = mockPeople.find((p) => p.messages.some((m) => m.id === id));
-  if (person) {
-    const messageIndex = person.messages.findIndex((m) => m.id === id);
-    if (messageIndex !== -1) {
-      person.messages.splice(messageIndex, 1);
-      updatePerson(person.id, { messages: person.messages });
-    }
+async function archiveMessage(id: string) {
+  const { error } = await supabase.from("messages").delete().eq("id", id);
+  if (!error) {
+    await refreshData();
+    messages.value = getCachedMessages();
+    showToast("Conversation archived", "Undo");
   }
-  showToast("Conversation archived", "Undo");
 }
 
-function openThread(msg: Message) {
-  markRead(msg.id);
+async function openThread(msg: Message) {
+  await markRead(msg.id);
   router.push(`/thread/${msg.id}`);
 }
 </script>
@@ -200,7 +202,13 @@ function openThread(msg: Message) {
         </button>
       </div>
 
-      <section class="inbox-list" aria-label="Messages">
+      <section v-if="loading" class="inbox-list" aria-label="Loading">
+        <div class="empty-state">
+          <p class="empty-state-text">Loading messages...</p>
+        </div>
+      </section>
+
+      <section v-else class="inbox-list" aria-label="Messages">
         <div
           v-for="msg in filteredMessages"
           :key="msg.id"
@@ -217,7 +225,7 @@ function openThread(msg: Message) {
               type="checkbox"
               class="row-checkbox focus-ring"
               :checked="selectedIds.has(msg.id)"
-              :aria-label="`Select message from ${msg.from}`"
+              :aria-label="`Select message from ${msg.msg_from}`"
               @change="toggleSelect(msg.id)"
             />
           </div>
@@ -240,7 +248,7 @@ function openThread(msg: Message) {
             </button>
           </div>
 
-          <div class="row-cell row-cell-from">{{ msg.from }}</div>
+          <div class="row-cell row-cell-from">{{ msg.msg_from }}</div>
 
           <div class="row-cell row-cell-content">
             <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText || getLabelText(msg.label) }}</span>
@@ -372,208 +380,10 @@ function openThread(msg: Message) {
 }
 
 .inbox-list {
-  background: var(--bg-color-surface);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   overflow: hidden;
   height: 100%;
   max-height: 75vh;
-}
-
-/* List / Table Row */
-.list-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  position: relative;
-  background: var(--bg-color-surface);
-  border-bottom: 1px solid var(--border-color-subtle);
-  padding: 0 var(--space-md);
-  height: var(--row-height-comfortable);
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.list-row:hover {
-  background: var(--bg-color-row-hover);
-}
-
-.list-row-unread {
-  background: var(--bg-color-unread);
-  font-weight: 600;
-  color: var(--font-color-primary);
-}
-
-.list-row-read {
-  background: var(--bg-color-surface);
-  font-weight: 400;
-  color: var(--font-color-secondary);
-}
-
-.list-row-selected {
-  background: var(--bg-color-selected);
-}
-
-/* Row Cells */
-.row-cell {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  height: 100%;
-  gap: var(--space-xs);
-}
-
-.row-cell-checkbox {
-  width: 40px;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-}
-
-.row-cell-star {
-  width: 28px;
-  justify-content: center;
-  opacity: 0.4;
-  transition: opacity var(--transition-fast);
-}
-
-.list-row:hover .row-cell-checkbox,
-.list-row-selected .row-cell-checkbox {
-  opacity: 1;
-}
-
-.list-row:hover .row-cell-star {
-  opacity: 1;
-}
-
-.row-cell-from {
-  font-weight: inherit;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.row-cell-content {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.row-cell-content .subject {
-  font-weight: inherit;
-}
-
-.row-cell-content .snippet {
-  color: var(--font-color-secondary);
-  font-weight: 400;
-}
-
-.row-cell-timestamp {
-  width: 80px;
-  justify-content: flex-end;
-  font-size: var(--font-xs);
-  color: var(--font-color-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.row-cell-actions {
-  position: absolute;
-  right: var(--space-md);
-  top: 0;
-  height: 100%;
-  align-items: center;
-  background: var(--bg-color-row-hover);
-  display: none;
-  gap: 0;
-  padding-left: var(--space-sm);
-}
-
-.list-row:hover .row-cell-actions {
-  display: flex;
-}
-
-.list-row:hover .row-cell-timestamp {
-  visibility: hidden;
-}
-
-.row-actions {
-  display: flex;
-}
-
-.row-action-btn {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-circle);
-  background: transparent;
-  border: none;
-  color: var(--font-color-muted);
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.row-action-btn:hover {
-  background: var(--bg-color-row-hover);
-  color: var(--font-color-primary);
-}
-
-/* Selection Checkbox */
-.row-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--font-color-muted);
-  border-radius: 2px;
-  appearance: none;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast);
-}
-
-.row-checkbox:checked {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-}
-
-/* Star Toggle */
-.star-btn {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--font-color-muted);
-  cursor: pointer;
-  font-size: 18px;
-  transition: color var(--transition-fast);
-}
-
-.star-btn:hover {
-  color: var(--font-color-secondary);
-}
-
-.star-btn-active {
-  color: #f9ab00;
-}
-
-/* Badge / Label */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) var(--space-sm);
-  border-radius: var(--radius-xs);
-  font-size: var(--font-xs);
-  font-weight: 500;
-  letter-spacing: 0.25px;
 }
 
 .badge-label-red {
@@ -640,12 +450,6 @@ function openThread(msg: Message) {
   width: 120px;
   height: 120px;
   opacity: 0.3;
-}
-
-.empty-state-title {
-  font-size: var(--font-lg);
-  font-weight: 500;
-  color: var(--font-color-primary);
 }
 
 .empty-state-text {

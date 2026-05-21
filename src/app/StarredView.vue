@@ -1,23 +1,30 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { getAllMessages, mockPeople, updatePerson } from "../utils/mockData";
+import { getCachedMessages, refreshData } from "../utils/supabase-data";
+import { supabase } from "../utils/supabase";
 
 const router = useRouter();
-const starredMessages = computed(() => getAllMessages().filter((m) => m.starred));
+const starredMessages = ref<any[]>([]);
+const loading = ref(true);
+
+onMounted(async () => {
+  starredMessages.value = getCachedMessages().filter((m) => m.starred);
+  await refreshData();
+  starredMessages.value = getCachedMessages().filter((m) => m.starred);
+  loading.value = false;
+});
 
 function openThread(id: string) {
   router.push(`/thread/${id}`);
 }
 
-function toggleStar(msg: any) {
-  const person = mockPeople.find((p) => p.messages.some((m) => m.id === msg.id));
-  if (person) {
-    const messageIndex = person.messages.findIndex((m) => m.id === msg.id);
-    if (messageIndex !== -1) {
-      person.messages[messageIndex].starred = !person.messages[messageIndex].starred;
-      updatePerson(person.id, { messages: person.messages });
-    }
+async function toggleStar(msg: any) {
+  msg.starred = !msg.starred;
+  const { error } = await supabase.from("messages").update({ starred: msg.starred }).eq("id", msg.id);
+  if (!error) {
+    await refreshData();
+    starredMessages.value = getCachedMessages().filter((m) => m.starred);
   }
 }
 </script>
@@ -26,7 +33,7 @@ function toggleStar(msg: any) {
   <main class="main-content">
     <div class="main-content-inner">
       <div class="starred-toolbar main-toolbar">
-        <h1 class="starred-title">Starred</h1>
+        <h1 class="page-title">Starred</h1>
       </div>
 
       <section class="inbox-list fade-in" aria-label="Starred messages">
@@ -60,20 +67,4 @@ function toggleStar(msg: any) {
   </main>
 </template>
 
-<style scoped>
-.starred-title {
-  font-size: 22px;
-  font-weight: 400;
-  color: var(--font-color-primary);
-  line-height: 1.3;
-  margin-left: var(--space-sm);
-}
-
-.inbox-list {
-  background: var(--bg-color-surface);
-  border: 1px solid var(--border-color-subtle);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-top: var(--space-xs);
-}
-</style>
+<style scoped></style>
