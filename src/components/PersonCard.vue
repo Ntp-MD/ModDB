@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Person } from "../utils/types";
-import { generateInitials, mockPeople, updatePerson } from "../utils/mockData";
+import { generateInitials, mockPeople, updatePerson, getLabelText } from "../utils/mockData";
 
 const props = defineProps<{ person: Person }>();
-const emit = defineEmits<{ (e: "delete", id: string): void; (e: "edit", id: string): void }>();
 
 const initials = computed(() => props.person.initials || generateInitials(props.person.name));
+const labelText = computed(() => props.person.labelText || getLabelText(props.person.label));
 
 function toggleStar() {
   const person = mockPeople.find((p) => p.id === props.person.id);
@@ -51,11 +51,7 @@ function toggleStar() {
     </div>
 
     <div class="card-person-footer">
-      <span class="badge" :class="`badge-label-${person.label}`">{{ person.labelText }}</span>
-      <div class="card-person-actions">
-        <button class="btn btn-ghost focus-ring card-person-btn" @click.stop="emit('edit', person.id)">Edit</button>
-        <button class="btn btn-danger focus-ring card-person-btn" @click.stop="emit('delete', person.id)">Delete</button>
-      </div>
+      <span class="badge" :class="`badge-label-${person.label}`">{{ labelText }}</span>
     </div>
   </article>
 </template>

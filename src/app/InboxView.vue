@@ -3,20 +3,16 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
 import { useSearch } from "../hooks/useSearch";
-import { getAllMessages, mockPeople, updatePerson } from "../utils/mockData";
+import { getAllMessages, mockPeople, updatePerson, getLabelText } from "../utils/mockData";
 import type { Message } from "../utils/types";
 
 const router = useRouter();
 const { showToast } = useToast();
 const { searchQuery, activeLabel } = useSearch();
 
-const messages = ref<Message[]>([...getAllMessages()]);
+const messages = computed(() => [...getAllMessages()]);
 const selectedIds = ref<Set<string>>(new Set());
 const activeTab = ref("primary");
-
-function reloadMessages() {
-  messages.value = [...getAllMessages()];
-}
 
 const tabs = [
   { id: "primary", label: "Primary" },
@@ -75,7 +71,6 @@ function toggleStar(msg: Message) {
     if (messageIndex !== -1) {
       person.messages[messageIndex].starred = msg.starred;
       updatePerson(person.id, { messages: person.messages });
-      reloadMessages();
     }
   }
 }
@@ -90,19 +85,32 @@ function markRead(id: string) {
       if (messageIndex !== -1) {
         person.messages[messageIndex].unread = false;
         updatePerson(person.id, { messages: person.messages });
-        reloadMessages();
       }
     }
   }
 }
 
 function deleteMessage(id: string) {
-  messages.value = messages.value.filter((m) => m.id !== id);
+  const person = mockPeople.find((p) => p.messages.some((m) => m.id === id));
+  if (person) {
+    const messageIndex = person.messages.findIndex((m) => m.id === id);
+    if (messageIndex !== -1) {
+      person.messages.splice(messageIndex, 1);
+      updatePerson(person.id, { messages: person.messages });
+    }
+  }
   showToast("Conversation moved to Trash", "Undo");
 }
 
 function archiveMessage(id: string) {
-  messages.value = messages.value.filter((m) => m.id !== id);
+  const person = mockPeople.find((p) => p.messages.some((m) => m.id === id));
+  if (person) {
+    const messageIndex = person.messages.findIndex((m) => m.id === id);
+    if (messageIndex !== -1) {
+      person.messages.splice(messageIndex, 1);
+      updatePerson(person.id, { messages: person.messages });
+    }
+  }
   showToast("Conversation archived", "Undo");
 }
 
@@ -235,7 +243,7 @@ function openThread(msg: Message) {
           <div class="row-cell row-cell-from">{{ msg.from }}</div>
 
           <div class="row-cell row-cell-content">
-            <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText }}</span>
+            <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText || getLabelText(msg.label) }}</span>
             <span class="subject">{{ msg.subject }}</span>
             <span class="snippet hide-mobile"> — {{ msg.snippet }}</span>
           </div>

@@ -13,7 +13,7 @@ export interface Person {
   role: string;
   company: string;
   label: "red" | "yellow" | "green" | "blue" | "purple";
-  labelText: string;
+  labelText?: string;
   starred: boolean;
   unread: boolean;
   avatar?: string;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { mockPeople, updatePerson } from "../utils/mockData";
+import { mockPeople, updatePerson, getLabelText } from "../utils/mockData";
 import type { Message } from "../utils/types";
 
 const router = useRouter();
@@ -75,7 +75,7 @@ function toggleStar(msg: Message) {
           </div>
           <div class="row-cell row-cell-from">{{ msg.to }}</div>
           <div class="row-cell row-cell-content">
-            <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText }}</span>
+            <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText || getLabelText(msg.label) }}</span>
             <span class="subject">{{ msg.subject }}</span>
             <span class="snippet hide-mobile"> — {{ msg.snippet }}</span>
           </div>

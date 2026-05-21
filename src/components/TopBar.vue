@@ -197,4 +197,10 @@ const searchFocused = ref(false);
   font-weight: 500;
   letter-spacing: 0.5px;
 }
+
+@media (max-width: 599px) {
+  .topbar-search {
+    display: none;
+  }
+}
 </style>

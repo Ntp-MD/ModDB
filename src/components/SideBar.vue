@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useSidebar } from "../hooks/useSidebar";
 import { useSearch } from "../hooks/useSearch";
-import { mockPeople } from "../utils/mockData";
+import { mockPeople, resetToDefaultData } from "../utils/mockData";
 import inboxIcon from "../assets/icons/inbox.png";
 import starIcon from "../assets/icons/star.png";
 import snoozeIcon from "../assets/icons/bin.png";
@@ -15,8 +15,6 @@ const route = useRoute();
 const router = useRouter();
 const { sidebarOpen, closeSidebar } = useSidebar();
 const { activeLabel, setActiveLabel, clearSearch } = useSearch();
-
-const composeMenuOpen = ref(false);
 
 const navItems = computed(() => {
   const allMessages = mockPeople.flatMap((person) => person.messages);
@@ -52,7 +50,6 @@ function handleLabelClick(labelId: string) {
     clearSearch();
   } else {
     setActiveLabel(labelId);
-    // Navigate to inbox to show filtered results
     if (route.path !== "/") {
       router.push("/");
     }
@@ -60,20 +57,10 @@ function handleLabelClick(labelId: string) {
   closeSidebar();
 }
 
-function toggleComposeMenu() {
-  composeMenuOpen.value = !composeMenuOpen.value;
-}
-
-function handleComposeMessage() {
-  composeMenuOpen.value = false;
-  router.push("/compose");
-  closeSidebar();
-}
-
-function handleAddPerson() {
-  composeMenuOpen.value = false;
-  router.push("/people");
-  closeSidebar();
+function handleResetData() {
+  if (confirm("Are you sure you want to reset all data to default? This will delete all your changes.")) {
+    resetToDefaultData();
+  }
 }
 </script>
 
@@ -83,35 +70,16 @@ function handleAddPerson() {
   <nav class="sidebar sidebar-collapse" :class="{ 'sidebar-open': sidebarOpen }" aria-label="Main navigation">
     <div class="sidebar-compose">
       <div class="compose-wrapper">
-        <button class="compose-btn focus-ring" @click="toggleComposeMenu" aria-label="Compose">
+        <button class="compose-btn focus-ring" @click="handleResetData" aria-label="Reset data">
           <span class="compose-btn-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
               <path
-                d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
               />
             </svg>
           </span>
-          <span class="compose-btn-label nav-label">Compose</span>
+          Compose
         </button>
-
-        <div v-if="composeMenuOpen" class="compose-menu fade-in">
-          <button class="compose-menu-item focus-ring" @click="handleComposeMessage">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2v6zm0-10.5l-8 5-8-5V6l8 5 8-5v1.5z"
-              />
-            </svg>
-            <span>Compose Message</span>
-          </button>
-          <button class="compose-menu-item focus-ring" @click="handleAddPerson">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-              />
-            </svg>
-            <span>Add Person</span>
-          </button>
-        </div>
       </div>
     </div>
 
@@ -223,6 +191,15 @@ function handleAddPerson() {
 
 .compose-menu-item:hover {
   background: var(--bg-color-row-hover);
+}
+
+.nav-item-reset {
+  color: var(--accent-danger);
+}
+
+.nav-item-reset:hover {
+  background: var(--bg-color-row-hover);
+  color: var(--accent-danger);
 }
 
 .compose-menu-item svg {

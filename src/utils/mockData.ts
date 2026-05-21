@@ -4,6 +4,20 @@ let personIdCounter = 1;
 let messageIdCounter = 1;
 
 const STORAGE_KEY = "moddb_people";
+const STORAGE_VERSION_KEY = "moddb_version";
+const DATA_VERSION = "1.2";
+
+const labelMap: Record<string, string> = {
+  blue: "DMS",
+  yellow: "PlusVenture",
+  green: "Sales",
+  red: "HR",
+  purple: "EX",
+};
+
+export function getLabelText(label: string): string {
+  return labelMap[label] || "Personal";
+}
 
 export function generatePersonId(): string {
   return `${personIdCounter++}`;
@@ -29,8 +43,7 @@ export const defaultMockPeople: Person[] = [
     email: "businessconsultant297@itopplus.com",
     role: "Account Manager",
     company: "ITOPPLUS",
-    label: "blue",
-    labelText: "DMS",
+    label: "green",
     starred: true,
     unread: true,
     lastContact: "10:30 AM",
@@ -47,8 +60,7 @@ export const defaultMockPeople: Person[] = [
         timestamp: "10:30 AM",
         unread: true,
         starred: true,
-        label: "blue",
-        labelText: "DMS",
+        label: "green",
       },
     ],
     social: {
@@ -64,7 +76,6 @@ export const defaultMockPeople: Person[] = [
     role: "Digital Marketing Consultant",
     company: "ITOPPLUS",
     label: "blue",
-    labelText: "DMS",
     starred: true,
     unread: true,
     lastContact: "10:30 AM",
@@ -82,7 +93,6 @@ export const defaultMockPeople: Person[] = [
         unread: true,
         starred: true,
         label: "blue",
-        labelText: "DMS",
       },
     ],
     social: {
@@ -90,10 +100,151 @@ export const defaultMockPeople: Person[] = [
       instagram: "https://instagram.com/nuttikarn.r",
     },
   },
+  {
+    id: generatePersonId(),
+    name: "Nuttanun Kaewkarn",
+    email: "nuttanun@theiconweb.com",
+    role: "Human Resource",
+    company: "ITOPPLUS",
+    label: "red",
+    starred: false,
+    unread: false,
+    lastContact: "May 15",
+    snippet: "Project timeline update needed.",
+    messages: [
+      {
+        id: generateMessageId(),
+        from: "Nuttanun Kaewkarn",
+        fromInitials: generateInitials("Nuttanun Kaewkarn"),
+        to: "me@example.com",
+        subject: "Project Timeline Update",
+        snippet: "Please review the revised timeline.",
+        body: "Hi,\n\nWe need to adjust the project timeline due to some delays. Please review the attached schedule.\n\nBest,\nNuttanun",
+        timestamp: "May 15",
+        unread: false,
+        starred: false,
+        label: "red",
+      },
+    ],
+    social: {
+      facebook: "https://facebook.com/sarah.j",
+      linkedin: "https://linkedin.com/in/sarah-johnson",
+    },
+  },
+  {
+    id: generatePersonId(),
+    name: "Luxsamon Anuntaprayoon",
+    email: "luxsamon@plusventure.co.th",
+    role: "CEO",
+    company: "StartupIO",
+    label: "yellow",
+    starred: true,
+    unread: true,
+    lastContact: "May 19",
+    snippet: "Investment proposal ready for review.",
+    messages: [
+      {
+        id: generateMessageId(),
+        from: "Luxsamon Anuntaprayoon",
+        fromInitials: generateInitials("Luxsamon Anuntaprayoon"),
+        to: "me@example.com",
+        subject: "Investment Proposal",
+        snippet: "Our team has prepared the proposal.",
+        body: "Hi,\n\nOur team has prepared the investment proposal as discussed. Let me know when you're available for a call.\n\nBest,\nMichael",
+        timestamp: "May 19",
+        unread: true,
+        starred: true,
+        label: "yellow",
+      },
+      {
+        id: generateMessageId(),
+        from: "Luxsamon Anuntaprayoon",
+        fromInitials: generateInitials("Luxsamon Anuntaprayoon"),
+        to: "me@example.com",
+        subject: "Follow-up: Investment Proposal",
+        snippet: "Any updates on the proposal review?",
+        body: "Hi,\n\nJust following up on the investment proposal we sent last week. Do you have any questions?\n\nBest,\nMichael",
+        timestamp: "May 20",
+        unread: false,
+        starred: false,
+        label: "yellow",
+      },
+    ],
+    social: {
+      instagram: "https://www.instagram.com/ninglsmm?",
+    },
+  },
+  {
+    id: generatePersonId(),
+    name: "Emma Williams",
+    email: "emma.w@hr-corp.com",
+    role: "HR Director",
+    company: "HR Corp",
+    label: "red",
+    starred: false,
+    unread: true,
+    lastContact: "May 20",
+    snippet: "New hiring policy announcement.",
+    messages: [
+      {
+        id: generateMessageId(),
+        from: "Emma Williams",
+        fromInitials: generateInitials("Emma Williams"),
+        to: "me@example.com",
+        subject: "New Hiring Policy",
+        snippet: "Please review the updated policy.",
+        body: "Hi,\n\nWe've updated our hiring policy to streamline the recruitment process. Please review the attached document.\n\nBest,\nEmma",
+        timestamp: "May 20",
+        unread: true,
+        starred: false,
+        label: "red",
+      },
+    ],
+    social: {
+      linkedin: "https://linkedin.com/in/emma-williams",
+    },
+  },
+  {
+    id: generatePersonId(),
+    name: "David Kim",
+    email: "david.kim@ex-tech.com",
+    role: "CTO",
+    company: "EX Tech",
+    label: "purple",
+    starred: false,
+    unread: false,
+    lastContact: "May 14",
+    snippet: "Technical architecture review.",
+    messages: [
+      {
+        id: generateMessageId(),
+        from: "David Kim",
+        fromInitials: generateInitials("David Kim"),
+        to: "me@example.com",
+        subject: "Architecture Review",
+        snippet: "Review the new system architecture.",
+        body: "Hi,\n\nOur team has designed a new system architecture. Please review and provide feedback.\n\nBest,\nDavid",
+        timestamp: "May 14",
+        unread: false,
+        starred: false,
+        label: "purple",
+      },
+    ],
+    social: {
+      linkedin: "https://linkedin.com/in/david-kim",
+    },
+  },
 ];
 
 function loadFromStorage(): Person[] {
   try {
+    const storedVersion = localStorage.getItem(STORAGE_VERSION_KEY);
+    if (storedVersion !== DATA_VERSION) {
+      localStorage.setItem(STORAGE_VERSION_KEY, DATA_VERSION);
+      localStorage.removeItem(STORAGE_KEY);
+      return defaultMockPeople;
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       return JSON.parse(stored);
@@ -165,7 +316,6 @@ export const defaultMockSnoozedMessages: Message[] = [
     unread: false,
     starred: false,
     label: "yellow",
-    labelText: "Plusventure",
   },
   {
     id: generateMessageId(),
@@ -179,7 +329,6 @@ export const defaultMockSnoozedMessages: Message[] = [
     unread: false,
     starred: false,
     label: "red",
-    labelText: "HR",
   },
 ];
 
@@ -218,4 +367,10 @@ export function deleteSnoozedMessage(id: string): void {
     mockSnoozedMessages.splice(index, 1);
     saveSnoozedToStorage(mockSnoozedMessages);
   }
+}
+
+export function resetToDefaultData(): void {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SNOOZED_STORAGE_KEY);
+  location.reload();
 }
