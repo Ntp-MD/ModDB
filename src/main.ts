@@ -5,9 +5,7 @@ import "./assets/styles/main.css";
 import { initializeData } from "./utils/supabase-data";
 
 // Initialize Supabase data
-initializeData().then(() => {
-  console.log('Supabase data initialized');
-}).catch(error => {
+initializeData().catch(error => {
   console.error('Failed to initialize Supabase data:', error);
 });
 

@@ -1,0 +1,123 @@
+/* ─── User Avatar ─── */
+.avatar-circle {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: var(--radius-circle);
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.avatar-circle-sm {
+  width: var(--avatar-size-sm);
+  height: var(--avatar-size-sm);
+}
+
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  background: var(--accent-primary);
+  color: var(--font-color-white);
+  font-weight: 600;
+  font-size: var(--font-sm);
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-initials[data-label="red"] {
+  background: var(--label-red);
+}
+.avatar-initials[data-label="yellow"] {
+  background: var(--label-yellow);
+}
+.avatar-initials[data-label="green"] {
+  background: var(--label-green);
+}
+.avatar-initials[data-label="blue"] {
+  background: var(--label-blue);
+}
+.avatar-initials[data-label="purple"] {
+  background: var(--label-purple);
+}
+
+.avatar-initials-sm {
+  width: var(--avatar-size-sm);
+  height: var(--avatar-size-sm);
+  font-size: var(--font-xs);
+}
+
+/* ─── Badge / Label ─── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-xs);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  letter-spacing: 0.25px;
+}
+
+.badge-label-red {
+  background: var(--label-red);
+  color: var(--font-color-white);
+}
+
+.badge-label-yellow {
+  background: var(--label-yellow);
+  color: var(--font-color-white);
+}
+
+.badge-label-green {
+  background: var(--label-green);
+  color: var(--font-color-white);
+}
+
+.badge-label-blue {
+  background: var(--label-blue);
+  color: var(--font-color-white);
+}
+
+.badge-label-purple {
+  background: var(--label-purple);
+  color: var(--font-color-white);
+}
+
+/* ─── Chip / Tag ─── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-xs);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.chip-removable {
+  padding-right: var(--space-xs);
+}
+
+.chip-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-circle);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.chip-remove-btn:hover {
+  opacity: 1;
+}

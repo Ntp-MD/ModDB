@@ -1,0 +1,7 @@
+/* ─── Card ─── */
+.card {
+  background: var(--bg-color-surface);
+  border: 1px solid var(--border-color-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}

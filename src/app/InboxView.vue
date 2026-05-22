@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
 import { useSearch } from "../hooks/useSearch";
-import { getCachedMessages, getLabelText, refreshData } from "../utils/supabase-data";
+import { getCachedMessages, getLabelText, refreshData, getPeople, updatePerson } from "../utils/supabase-data";
 import { supabase } from "../utils/supabase";
 import type { Message } from "../utils/types";
 
@@ -12,16 +12,15 @@ const { showToast } = useToast();
 const { searchQuery, activeLabel } = useSearch();
 
 const messages = ref<Message[]>([]);
+const people = ref<any[]>([]);
 const loading = ref(true);
 
 onMounted(async () => {
-  console.log("InboxView: onMounted - loading messages");
   messages.value = getCachedMessages();
-  console.log("InboxView: Initial messages count:", messages.value.length);
+  people.value = getPeople();
   await refreshData();
   messages.value = getCachedMessages();
-  console.log("InboxView: After refresh, messages count:", messages.value.length);
-  console.log("InboxView: Messages:", messages.value);
+  people.value = getPeople();
   loading.value = false;
 });
 const selectedIds = ref<Set<string>>(new Set());
@@ -37,7 +36,11 @@ const allSelected = computed(() => filteredMessages.value.length > 0 && selected
 const someSelected = computed(() => selectedIds.value.size > 0 && selectedIds.value.size < filteredMessages.value.length);
 
 const filteredMessages = computed(() => {
-  let result = [...messages.value];
+  const personMap = new Map(people.value.map((p) => [p.id, p]));
+  let result = messages.value.filter((msg) => {
+    const person = personMap.get(msg.person_id || "");
+    return !person || person.status !== "bin";
+  });
 
   // Filter by search query
   if (searchQuery.value) {
@@ -83,6 +86,8 @@ async function toggleStar(msg: Message) {
   if (!error) {
     await refreshData();
     messages.value = getCachedMessages();
+  } else {
+    showToast("Failed to update star status", "Error");
   }
 }
 
@@ -94,26 +99,76 @@ async function markRead(id: string) {
     if (!error) {
       await refreshData();
       messages.value = getCachedMessages();
+    } else {
+      showToast("Failed to mark as read", "Error");
     }
   }
 }
 
 async function deleteMessage(id: string) {
-  const { error } = await supabase.from("messages").delete().eq("id", id);
-  if (!error) {
+  const msg = messages.value.find((m) => m.id === id);
+  if (msg && msg.person_id) {
+    await updatePerson(msg.person_id, { status: "bin" });
     await refreshData();
     messages.value = getCachedMessages();
+    people.value = getPeople();
     showToast("Conversation moved to Trash", "Undo");
+  } else {
+    showToast("Failed to delete message", "Error");
   }
 }
 
 async function archiveMessage(id: string) {
-  const { error } = await supabase.from("messages").delete().eq("id", id);
-  if (!error) {
+  const msg = messages.value.find((m) => m.id === id);
+  if (msg && msg.person_id) {
+    await updatePerson(msg.person_id, { status: "bin" });
     await refreshData();
     messages.value = getCachedMessages();
+    people.value = getPeople();
     showToast("Conversation archived", "Undo");
+  } else {
+    showToast("Failed to archive message", "Error");
   }
+}
+
+async function bulkDelete() {
+  const count = selectedIds.value.size;
+  for (const id of selectedIds.value) {
+    const msg = messages.value.find((m) => m.id === id);
+    if (msg && msg.person_id) {
+      await updatePerson(msg.person_id, { status: "bin" });
+    }
+  }
+  await refreshData();
+  messages.value = getCachedMessages();
+  people.value = getPeople();
+  selectedIds.value = new Set();
+  showToast(`${count} conversations moved to Trash`, "Undo");
+}
+
+async function bulkArchive() {
+  const count = selectedIds.value.size;
+  for (const id of selectedIds.value) {
+    const msg = messages.value.find((m) => m.id === id);
+    if (msg && msg.person_id) {
+      await updatePerson(msg.person_id, { status: "bin" });
+    }
+  }
+  await refreshData();
+  messages.value = getCachedMessages();
+  people.value = getPeople();
+  selectedIds.value = new Set();
+  showToast(`${count} conversations archived`, "Undo");
+}
+
+async function bulkMarkRead() {
+  for (const id of selectedIds.value) {
+    await supabase.from("messages").update({ unread: false }).eq("id", id);
+  }
+  await refreshData();
+  messages.value = getCachedMessages();
+  selectedIds.value = new Set();
+  showToast("Marked as read");
 }
 
 async function openThread(msg: Message) {
@@ -137,14 +192,33 @@ async function openThread(msg: Message) {
               @change="toggleSelectAll"
             />
           </div>
-          <button class="btn-icon-only focus-ring inbox-toolbar-btn" aria-label="Refresh">
+          <button v-if="selectedIds.size > 0" class="btn-icon-only focus-ring inbox-toolbar-btn" aria-label="Delete selected" @click="bulkDelete">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+            </svg>
+          </button>
+          <button v-if="selectedIds.size > 0" class="btn-icon-only focus-ring inbox-toolbar-btn" aria-label="Archive selected" @click="bulkArchive">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"
+              />
+            </svg>
+          </button>
+          <button v-if="selectedIds.size > 0" class="btn-icon-only focus-ring inbox-toolbar-btn" aria-label="Mark as read" @click="bulkMarkRead">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4v-6h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2c0 1.66 1.34 3 3 3s3-1.34 3-3h2v6zm0-10.5l-8 5-8-5V6l8 5 8-5v1.5z"
+              />
+            </svg>
+          </button>
+          <button v-if="selectedIds.size === 0" class="btn-icon-only focus-ring inbox-toolbar-btn" aria-label="Refresh">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path
                 d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
               />
             </svg>
           </button>
-          <button class="btn-icon-only focus-ring inbox-toolbar-btn" aria-label="More options">
+          <button v-if="selectedIds.size === 0" class="btn-icon-only focus-ring inbox-toolbar-btn" aria-label="More options">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path
                 d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
@@ -305,105 +379,10 @@ async function openThread(msg: Message) {
 </template>
 
 <style scoped>
-.inbox-toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.inbox-select-all {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-}
-
-.inbox-toolbar-btn {
-  width: 40px;
-  height: 40px;
-  color: var(--font-color-muted);
-}
-
-.inbox-toolbar-right {
-  display: flex;
-  align-items: center;
-}
-
 .pagination-info {
   font-size: var(--font-xs);
   color: var(--font-color-muted);
   white-space: nowrap;
-}
-
-.inbox-tabs {
-  display: flex;
-  background: var(--bg-color-surface);
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  overflow: hidden;
-}
-
-.inbox-tab {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: 0 var(--space-lg);
-  height: 56px;
-  font-size: var(--font-sm);
-  font-weight: 500;
-  color: var(--font-color-muted);
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  transition:
-    color var(--transition-fast),
-    border-color var(--transition-fast),
-    background var(--transition-fast);
-  white-space: nowrap;
-}
-
-.inbox-tab:hover {
-  background: var(--bg-color-row-hover);
-  color: var(--font-color-primary);
-}
-
-.inbox-tab-active {
-  color: var(--accent-primary);
-  border-bottom-color: var(--accent-primary);
-}
-
-.inbox-tab-icon {
-  display: flex;
-  align-items: center;
-}
-
-.inbox-list {
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  overflow: hidden;
-  height: 100%;
-  max-height: 75vh;
-}
-
-.badge-label-red {
-  background: var(--label-red);
-  color: var(--font-color-white);
-}
-
-.badge-label-yellow {
-  background: var(--label-yellow);
-  color: var(--font-color-white);
-}
-
-.badge-label-green {
-  background: var(--label-green);
-  color: var(--font-color-white);
-}
-
-.badge-label-blue {
-  background: var(--label-blue);
-  color: var(--font-color-white);
 }
 
 /* Mobile responsive */

@@ -34,6 +34,7 @@ export interface Person {
   labelText?: string;
   starred: boolean;
   unread: boolean;
+  status?: "inbox" | "starred" | "bin";
   avatar?: string;
   initials?: string;
   lastContact: string;
@@ -44,6 +45,7 @@ export interface Person {
     instagram?: string;
     linkedin?: string;
     github?: string;
+    status?: "inbox" | "starred" | "bin";
   };
   created_at?: string;
   updated_at?: string;

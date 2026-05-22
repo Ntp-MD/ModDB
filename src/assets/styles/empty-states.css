@@ -1,0 +1,28 @@
+/* ─── Empty State ─── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--font-color-muted);
+}
+
+.empty-state-icon {
+  width: 120px;
+  height: 120px;
+  opacity: 0.3;
+}
+
+.empty-state-title {
+  font-size: var(--font-lg);
+  font-weight: 500;
+  color: var(--font-color-primary);
+}
+
+.empty-state-text {
+  font-size: var(--font-sm);
+  color: var(--font-color-secondary);
+}

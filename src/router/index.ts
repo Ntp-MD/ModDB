@@ -1,25 +1,26 @@
-import { createRouter, createWebHistory } from "vue-router";
-import InboxView from "../app/InboxView.vue";
-import ContactsView from "../app/ContactsView.vue";
-import ThreadView from "../app/ThreadView.vue";
-import StarredView from "../app/StarredView.vue";
-import SentView from "../app/SentView.vue";
-import ComposeView from "../app/ComposeView.vue";
-import BinView from "../app/BinView.vue";
-import DraftsView from "../app/DraftsView.vue";
+import { createRouter, createWebHistory, type RouteRecordRaw } from "vue-router";
+
+const views = import.meta.glob("../app/*.vue");
+
+const routeMap: Record<string, string> = {
+  "InboxView": "/",
+  "ThreadView": "/thread/:id",
+};
+
+const routes: RouteRecordRaw[] = Object.keys(views).map((path) => {
+  const match = path.match(/\.\/app\/(.*)\.vue$/);
+  if (!match) return null;
+  const componentName = match[1];
+  const routePath = routeMap[componentName] || `/${componentName.toLowerCase().replace("view", "")}`;
+  return {
+    path: routePath,
+    component: views[path],
+  };
+}).filter(Boolean) as RouteRecordRaw[];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    { path: "/", component: InboxView },
-    { path: "/starred", component: StarredView },
-    { path: "/people", component: ContactsView },
-    { path: "/sent", component: SentView },
-    { path: "/snoozed", component: BinView },
-    { path: "/drafts", component: DraftsView },
-    { path: "/thread/:id", component: ThreadView },
-    { path: "/compose", component: ComposeView },
-  ],
+  routes,
 });
 
 export default router;

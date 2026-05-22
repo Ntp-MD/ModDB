@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useSidebar } from "../hooks/useSidebar";
 import { useSearch } from "../hooks/useSearch";
@@ -16,32 +16,62 @@ const router = useRouter();
 const { sidebarOpen, closeSidebar } = useSidebar();
 const { activeLabel, setActiveLabel, clearSearch } = useSearch();
 
-const navItems = computed(() => {
-  const allMessages = getCachedMessages();
-  const allPeople = getPeople();
-  const unreadCount = allMessages.filter((msg) => msg.unread).length;
-  const starredCount = allMessages.filter((msg) => msg.starred).length;
-  const sentCount = allMessages.filter((msg) => msg.msg_to === "me@example.com").length;
-  const binCount = allMessages.filter((msg) => !msg.unread).length;
-  const contactsCount = allPeople.length;
+const labelModalOpen = ref(false);
+const newLabelName = ref("");
+const newLabelColor = ref("blue");
 
-  return [
-    { id: "inbox", label: "Inbox", route: "/", icon: "inbox", count: unreadCount },
-    { id: "starred", label: "Starred", route: "/starred", icon: "star", count: starredCount },
-    { id: "sent", label: "Sent", route: "/sent", icon: "send", count: sentCount },
-    { id: "drafts", label: "Drafts", route: "/drafts", icon: "draft", count: 0 },
-    { id: "bin", label: "Bin", route: "/snoozed", icon: "snoozed", count: binCount },
-    { id: "people", label: "Contacts", route: "/people", icon: "people", count: contactsCount },
-  ];
+const defaultLabels = [
+  { id: "blue", label: "DMS", color: "blue" },
+  { id: "yellow", label: "PlusVenture", color: "yellow" },
+  { id: "green", label: "Sales", color: "green" },
+  { id: "red", label: "HR", color: "red" },
+  { id: "purple", label: "EX", color: "purple" },
+];
+
+const customLabels = ref<{ id: string; label: string; color: string }[]>([]);
+
+onMounted(() => {
+  const saved = localStorage.getItem("customLabels");
+  if (saved) {
+    customLabels.value = JSON.parse(saved);
+  }
 });
 
 const labelItems = computed(() => {
+  return [...defaultLabels, ...customLabels.value];
+});
+
+const navItems = computed(() => {
+  const allMessages = getCachedMessages();
+  const allPeople = getPeople();
+  const personMap = new Map(allPeople.map((p) => [p.id, p]));
+
+  const inboxCount = allMessages.filter((msg) => {
+    const person = personMap.get(msg.person_id || "");
+    return !person || person.status !== "bin";
+  }).length;
+
+  const starredCount = allMessages.filter((msg) => {
+    const person = personMap.get(msg.person_id || "");
+    return msg.starred || (person && (person.status === "starred" || person.starred));
+  }).length;
+
+  const sentCount = allMessages.filter((msg) => msg.msg_to === "me@example.com").length;
+
+  const binCount = allMessages.filter((msg) => {
+    const person = personMap.get(msg.person_id || "");
+    return person && person.status === "bin";
+  }).length;
+
+  const contactsCount = allPeople.length;
+
   return [
-    { id: "blue", label: "DMS", color: "blue" },
-    { id: "yellow", label: "PlusVenture", color: "yellow" },
-    { id: "green", label: "Sales", color: "green" },
-    { id: "red", label: "HR", color: "red" },
-    { id: "purple", label: "EX", color: "purple" },
+    { id: "inbox", label: "Inbox", route: "/", icon: "inbox", count: inboxCount },
+    { id: "starred", label: "Starred", route: "/starred", icon: "star", count: starredCount },
+    { id: "sent", label: "Sent", route: "/sent", icon: "send", count: sentCount },
+    { id: "drafts", label: "Drafts", route: "/drafts", icon: "draft", count: 0 },
+    { id: "bin", label: "Bin", route: "/bin", icon: "snoozed", count: binCount },
+    { id: "people", label: "Contacts", route: "/contacts", icon: "people", count: contactsCount },
   ];
 });
 
@@ -60,6 +90,37 @@ function handleLabelClick(labelId: string) {
 function handleResetData() {
   if (confirm("Are you sure you want to reset all data to default? This will delete all your changes.")) {
     resetToDefaultData();
+  }
+}
+
+function openLabelModal() {
+  labelModalOpen.value = true;
+  newLabelName.value = "";
+  newLabelColor.value = "blue";
+}
+
+function closeLabelModal() {
+  labelModalOpen.value = false;
+}
+
+function createLabel() {
+  if (!newLabelName.value.trim()) return;
+  const id = `custom_${Date.now()}`;
+  customLabels.value.push({
+    id,
+    label: newLabelName.value,
+    color: newLabelColor.value,
+  });
+  localStorage.setItem("customLabels", JSON.stringify(customLabels.value));
+  closeLabelModal();
+}
+
+function deleteLabel(id: string) {
+  if (!confirm("Delete this label?")) return;
+  customLabels.value = customLabels.value.filter((l) => l.id !== id);
+  localStorage.setItem("customLabels", JSON.stringify(customLabels.value));
+  if (activeLabel.value === id) {
+    clearSearch();
   }
 }
 </script>
@@ -105,6 +166,16 @@ function handleResetData() {
     <div class="sidebar-section">
       <p class="nav-section-title nav-label">Labels</p>
       <ul role="list">
+        <li>
+          <button class="nav-item nav-item-add-label focus-ring" @click="openLabelModal" aria-label="Create new label">
+            <span class="nav-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+              </svg>
+            </span>
+            <span class="nav-label">Create new label</span>
+          </button>
+        </li>
         <li v-for="lbl in labelItems" :key="lbl.id">
           <span
             class="nav-item"
@@ -122,11 +193,58 @@ function handleResetData() {
               </svg>
             </span>
             <span class="nav-label">{{ lbl.label }}</span>
+            <button
+              v-if="lbl.id.startsWith('custom_')"
+              class="label-delete-btn focus-ring"
+              aria-label="Delete label"
+              @click.stop="deleteLabel(lbl.id)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+              </svg>
+            </button>
           </span>
         </li>
       </ul>
     </div>
   </nav>
+
+  <div v-if="labelModalOpen" class="modal-overlay" @click.self="closeLabelModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 class="modal-title">Create new label</h2>
+        <button class="btn-icon-only focus-ring" aria-label="Close" @click="closeLabelModal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Label name</label>
+          <input v-model="newLabelName" type="text" class="form-input focus-ring" placeholder="Enter label name" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <div class="color-picker">
+            <button
+              v-for="color in ['blue', 'yellow', 'green', 'red', 'purple']"
+              :key="color"
+              class="color-option focus-ring"
+              :class="{ 'color-option-active': newLabelColor === color }"
+              :style="{ background: `var(--label-${color})` }"
+              @click="newLabelColor = color"
+              :aria-label="color"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary focus-ring" @click="closeLabelModal">Cancel</button>
+        <button class="btn btn-primary focus-ring" @click="createLabel">Create</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -326,5 +444,96 @@ function handleResetData() {
   padding: var(--space-md) var(--space-md) var(--space-xs);
   letter-spacing: 0.25px;
   text-transform: uppercase;
+}
+
+.label-delete-btn {
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  background: transparent;
+  border: none;
+  color: var(--font-color-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.nav-item:hover .label-delete-btn {
+  opacity: 1;
+}
+
+.label-delete-btn:hover {
+  color: var(--accent-danger);
+}
+
+.nav-item-add-label {
+  border: 1px dashed var(--border-color-subtle);
+  margin-bottom: var(--space-xs);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+
+.modal-dialog {
+  background: var(--bg-color-surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dialog);
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--border-color-subtle);
+}
+
+.modal-title {
+  font-size: var(--font-md);
+  font-weight: 500;
+  color: var(--font-color-primary);
+}
+
+.modal-body {
+  padding: var(--space-lg);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding: var(--space-md) var(--space-lg);
+  border-top: 1px solid var(--border-color-subtle);
+}
+
+.color-picker {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-circle);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.color-option-active {
+  border-color: var(--font-color-primary);
 }
 </style>

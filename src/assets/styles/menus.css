@@ -1,0 +1,36 @@
+/* ─── Menu / Dropdown ─── */
+.menu {
+  position: absolute;
+  background: var(--bg-color-surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dropdown);
+  min-width: 180px;
+  padding: var(--space-xs) 0;
+  z-index: var(--z-dropdown);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-xs) var(--space-md);
+  height: 36px;
+  font-size: var(--font-sm);
+  color: var(--font-color-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.menu-item:hover {
+  background: var(--bg-color-row-hover);
+}
+
+.menu-item-danger {
+  color: var(--accent-danger);
+}
+
+.menu-divider {
+  height: 1px;
+  background: var(--border-color-subtle);
+  margin: var(--space-xs) var(--space-md);
+}

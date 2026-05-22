@@ -1,0 +1,265 @@
+/* ─── App Shell & Layout ─── */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--topbar-height);
+  background: var(--bg-color-topbar);
+  border-bottom: 1px solid var(--border-color-subtle);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-sm);
+  gap: 4px;
+  z-index: var(--z-topbar);
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-color-page);
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform var(--transition-normal);
+  z-index: var(--z-sidebar);
+  transform: translateX(-100%);
+}
+
+.sidebar-open {
+  transform: translateX(0);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-color-overlay);
+  z-index: calc(var(--z-sidebar) - 1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+}
+
+.sidebar-overlay-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  margin-top: var(--topbar-height);
+  margin-left: 0;
+  padding: var(--space-xs);
+  min-height: calc(100vh - var(--topbar-height));
+  transition: margin-left var(--transition-normal);
+}
+
+.main-content-inner {
+  width: 100%;
+}
+
+.main-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  position: sticky;
+  top: var(--topbar-height);
+  z-index: var(--z-sticky);
+  background: var(--bg-color-page);
+  min-height: var(--topbar-height);
+}
+
+/* ─── Navigation ─── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: 0 var(--space-md);
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+  color: var(--font-color-primary);
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  height: 32px;
+  min-height: 32px;
+  text-decoration: none;
+  margin-right: var(--space-sm);
+}
+
+.nav-item:hover {
+  background: var(--bg-color-row-hover);
+  text-decoration: none;
+}
+
+.nav-item-active {
+  background: var(--bg-color-nav-active);
+  color: var(--font-color-link);
+  font-weight: 600;
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.nav-icon img {
+  object-fit: contain;
+}
+
+.nav-label {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nav-section-title {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--font-color-muted);
+  padding: var(--space-md) var(--space-md) var(--space-xs);
+  letter-spacing: 0.25px;
+  text-transform: uppercase;
+}
+
+/* ─── Search Bar ─── */
+.search-bar {
+  width: 100%;
+  height: 48px;
+  max-width: none;
+  background: transparent;
+  border: none;
+  color: var(--font-color-primary);
+  font-size: var(--font-md);
+  padding: 0;
+  outline: none;
+}
+
+.search-bar:focus {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+/* ─── Mobile Adjustments ─── */
+@media (max-width: 599px) {
+  .topbar-search {
+    max-width: none;
+    margin: 0 var(--space-sm);
+  }
+
+  .topbar-actions {
+    gap: 0;
+  }
+
+  .main-content {
+    padding: var(--space-xs);
+  }
+
+  .main-toolbar {
+    min-height: 56px;
+    padding: 0 var(--space-xs);
+  }
+
+  .main-content-inner {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* ─── Tablet Adjustments ─── */
+@media (min-width: 600px) {
+  .topbar {
+    height: var(--topbar-height);
+    padding: 0 var(--space-md);
+  }
+
+  .sidebar {
+    transform: translateX(0);
+    width: var(--sidebar-width-mini);
+    top: var(--topbar-height);
+    height: calc(100vh - var(--topbar-height));
+  }
+
+  .sidebar .nav-label,
+  .sidebar .compose-btn-label {
+    display: none;
+  }
+
+  .main-content {
+    margin-top: var(--topbar-height);
+    margin-left: var(--sidebar-width-mini);
+    padding: 0 var(--space-lg);
+    min-height: calc(100vh - var(--topbar-height));
+  }
+
+  .main-toolbar {
+    top: var(--topbar-height);
+  }
+
+  .person-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+  }
+
+  .hide-tablet {
+    display: none;
+  }
+}
+
+/* ─── Desktop Adjustments ─── */
+@media (min-width: 1024px) {
+  .sidebar {
+    width: var(--sidebar-width);
+  }
+
+  .sidebar .nav-label,
+  .sidebar .compose-btn-label {
+    display: inline;
+  }
+
+  .main-content {
+    margin-left: var(--sidebar-width);
+  }
+
+  .person-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .hide-tablet {
+    display: initial;
+  }
+}
+
+/* ─── Screen Boundaries ─── */
+@media (min-width: 1440px) {
+  .main-content-inner {
+    margin: 0 auto;
+  }
+}
+
+/* ─── Landscape Mobile ─── */
+@media (min-width: 600px) and (max-height: 500px) {
+  .topbar {
+    height: 48px;
+  }
+
+  .sidebar {
+    top: 48px;
+    height: calc(100vh - 48px);
+  }
+
+  .main-content {
+    margin-top: 48px;
+  }
+
+  .main-toolbar {
+    top: 48px;
+  }
+}

@@ -1,0 +1,54 @@
+/* ─── Toast / Snackbar ─── */
+.toast-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.toast {
+  background: var(--font-color-primary);
+  color: var(--font-color-white);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 0;
+  font-size: var(--font-sm);
+  box-shadow: var(--shadow-toast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  min-width: 280px;
+  max-width: none;
+  width: 100%;
+}
+
+.toast-action {
+  color: var(--bg-color-compose);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: var(--font-xs);
+  cursor: pointer;
+  margin-left: auto;
+  background: none;
+  border: none;
+  letter-spacing: 0.25px;
+}
+
+/* ─── Responsive Toast Adjustments ─── */
+@media (min-width: 600px) {
+  .toast-container {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    bottom: var(--space-lg);
+  }
+
+  .toast {
+    max-width: 480px;
+    border-radius: var(--radius-sm);
+    width: auto;
+  }
+}

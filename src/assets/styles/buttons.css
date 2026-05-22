@@ -1,0 +1,118 @@
+/* ─── Buttons ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: var(--font-sm);
+  transition:
+    box-shadow var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.btn-compose {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--bg-color-compose);
+  color: var(--font-color-compose);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: none;
+  transition: box-shadow var(--transition-fast);
+}
+
+.btn-compose:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.btn-compose-icon {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--font-color-secondary);
+  border: 1px solid var(--border-color-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-md);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-color-row-hover);
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--accent-danger);
+  border: 1px solid var(--accent-danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-md);
+}
+
+.btn-danger:hover {
+  background: var(--accent-danger-bg);
+}
+
+.btn-primary {
+  background: var(--accent-primary);
+  color: var(--font-color-white);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: var(--space-xs) var(--space-md);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ─── Icon-only Button ─── */
+.btn-icon-only {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  background: transparent;
+  border: none;
+  color: var(--font-color-muted);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.btn-icon-only:hover {
+  background: var(--bg-color-row-hover);
+  color: var(--font-color-primary);
+}
+
+/* ─── Row Action Button ─── */
+.row-action-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  background: transparent;
+  border: none;
+  color: var(--font-color-muted);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.row-action-btn:hover {
+  background: var(--bg-color-row-hover);
+  color: var(--font-color-primary);
+}

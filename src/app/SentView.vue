@@ -89,14 +89,4 @@ function toggleStar(msg: Message) {
   </main>
 </template>
 
-<style scoped>
-.badge-label-green {
-  background: var(--label-green);
-  color: var(--font-color-white);
-}
-
-.badge-label-blue {
-  background: var(--label-blue);
-  color: var(--font-color-white);
-}
-</style>
+<style scoped></style>

@@ -26,12 +26,15 @@
   --accent-primary-light: #d3e3fd;
   --accent-success: #1e8e3e;
   --accent-danger: #d93025;
+  --accent-danger-bg: rgba(217, 48, 37, 0.05);
+  --star-active-color: #f9ab00;
 
   /* ─── Gmail Label Badge Colors ─── */
   --label-red: #d93025;
   --label-yellow: #f9a825;
   --label-green: #1e8e3e;
   --label-blue: #0b57d0;
+  --label-purple: #9334e6;
 
   /* ─── Font Size — Gmail uses 14px base ─── */
   --font-xs: clamp(11px, 0.5vw, 12px);
