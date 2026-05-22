@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { getCachedMessages, getLabelText } from "../utils/supabase-data";
+import { getCachedMessages, getLabelText, getLabelColor } from "../utils/supabase-data";
 import type { Message } from "../utils/types";
 
 const router = useRouter();
@@ -65,7 +65,9 @@ function toggleStar(msg: Message) {
           </div>
           <div class="row-cell row-cell-from">{{ msg.msg_to }}</div>
           <div class="row-cell row-cell-content">
-            <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText || getLabelText(msg.label) }}</span>
+            <span v-if="msg.label" class="badge hide-mobile" :style="{ background: getLabelColor(msg.label) }">{{
+              msg.labelText || getLabelText(msg.label)
+            }}</span>
             <span class="subject">{{ msg.subject }}</span>
             <span class="snippet hide-mobile"> — {{ msg.snippet }}</span>
           </div>

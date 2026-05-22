@@ -1,9 +1,21 @@
 <script setup lang="ts">
-import { computed, ref, onMounted } from "vue";
+import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useSidebar } from "../hooks/useSidebar";
 import { useSearch } from "../hooks/useSearch";
-import { getPeople, getCachedMessages, resetToDefaultData } from "../utils/supabase-data";
+import {
+  getPeople,
+  getCachedMessages,
+  resetToDefaultData,
+  getLabelColor,
+  getAllLabels,
+  saveLabelMap,
+  saveLabelMapToDB,
+  saveCustomLabelsToDB,
+  deleteLabelFromDB,
+  customLabels,
+  labelMap,
+} from "../utils/supabase-data";
 import inboxIcon from "../assets/icons/inbox.png";
 import starIcon from "../assets/icons/star.png";
 import snoozeIcon from "../assets/icons/bin.png";
@@ -17,28 +29,15 @@ const { sidebarOpen, closeSidebar } = useSidebar();
 const { activeLabel, setActiveLabel, clearSearch } = useSearch();
 
 const labelModalOpen = ref(false);
+const editMode = ref(false);
+const editingLabelId = ref("");
 const newLabelName = ref("");
 const newLabelColor = ref("blue");
-
-const defaultLabels = [
-  { id: "blue", label: "DMS", color: "blue" },
-  { id: "yellow", label: "PlusVenture", color: "yellow" },
-  { id: "green", label: "Sales", color: "green" },
-  { id: "red", label: "HR", color: "red" },
-  { id: "purple", label: "EX", color: "purple" },
-];
-
-const customLabels = ref<{ id: string; label: string; color: string }[]>([]);
-
-onMounted(() => {
-  const saved = localStorage.getItem("customLabels");
-  if (saved) {
-    customLabels.value = JSON.parse(saved);
-  }
-});
+const customColor = ref("#0b57d0");
+const useCustomColor = ref(false);
 
 const labelItems = computed(() => {
-  return [...defaultLabels, ...customLabels.value];
+  return getAllLabels();
 });
 
 const navItems = computed(() => {
@@ -94,31 +93,91 @@ function handleResetData() {
 }
 
 function openLabelModal() {
-  labelModalOpen.value = true;
+  editMode.value = false;
+  editingLabelId.value = "";
   newLabelName.value = "";
   newLabelColor.value = "blue";
+  customColor.value = "#0b57d0";
+  useCustomColor.value = false;
+  labelModalOpen.value = true;
+}
+
+function openEditLabel(id: string) {
+  const presetColors = ["blue", "yellow", "green", "red", "purple"];
+  const isPreset = presetColors.includes(id);
+
+  if (isPreset) {
+    editMode.value = true;
+    editingLabelId.value = id;
+    newLabelName.value = labelMap.value[id] || "";
+    newLabelColor.value = id;
+    useCustomColor.value = false;
+  } else {
+    const label = customLabels.value.find((l) => l.id === id);
+    if (!label) return;
+    editMode.value = true;
+    editingLabelId.value = id;
+    newLabelName.value = label.label;
+    if (presetColors.includes(label.color)) {
+      newLabelColor.value = label.color;
+      useCustomColor.value = false;
+    } else {
+      customColor.value = label.color;
+      useCustomColor.value = true;
+    }
+  }
+  labelModalOpen.value = true;
 }
 
 function closeLabelModal() {
   labelModalOpen.value = false;
+  editMode.value = false;
+  editingLabelId.value = "";
 }
 
-function createLabel() {
+async function saveLabel() {
   if (!newLabelName.value.trim()) return;
-  const id = `custom_${Date.now()}`;
-  customLabels.value.push({
-    id,
-    label: newLabelName.value,
-    color: newLabelColor.value,
-  });
-  localStorage.setItem("customLabels", JSON.stringify(customLabels.value));
+  const color = useCustomColor.value ? customColor.value : newLabelColor.value;
+  const presetColors = ["blue", "yellow", "green", "red", "purple"];
+
+  if (editMode.value && editingLabelId.value) {
+    const isPreset = presetColors.includes(editingLabelId.value);
+
+    if (isPreset) {
+      labelMap.value[editingLabelId.value] = newLabelName.value;
+      saveLabelMap(labelMap.value);
+      await saveLabelMapToDB(labelMap.value);
+    } else {
+      const index = customLabels.value.findIndex((l) => l.id === editingLabelId.value);
+      if (index !== -1) {
+        customLabels.value[index] = {
+          id: editingLabelId.value,
+          label: newLabelName.value,
+          color,
+        };
+      }
+      localStorage.setItem("customLabels", JSON.stringify(customLabels.value));
+      await saveCustomLabelsToDB(customLabels.value);
+    }
+  } else {
+    const id = `custom_${Date.now()}`;
+    customLabels.value.push({
+      id,
+      label: newLabelName.value,
+      color,
+    });
+    localStorage.setItem("customLabels", JSON.stringify(customLabels.value));
+    await saveCustomLabelsToDB(customLabels.value);
+  }
+
   closeLabelModal();
 }
 
-function deleteLabel(id: string) {
+async function deleteLabel(id: string) {
   if (!confirm("Delete this label?")) return;
   customLabels.value = customLabels.value.filter((l) => l.id !== id);
   localStorage.setItem("customLabels", JSON.stringify(customLabels.value));
+  await deleteLabelFromDB(id);
   if (activeLabel.value === id) {
     clearSearch();
   }
@@ -186,23 +245,32 @@ function deleteLabel(id: string) {
             @keydown.enter="handleLabelClick(lbl.id)"
           >
             <span class="nav-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" :style="{ color: `var(--label-${lbl.color})` }">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" :style="{ color: getLabelColor(lbl.color) }">
                 <path
                   d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"
                 />
               </svg>
             </span>
             <span class="nav-label">{{ lbl.label }}</span>
-            <button
-              v-if="lbl.id.startsWith('custom_')"
-              class="label-delete-btn focus-ring"
-              aria-label="Delete label"
-              @click.stop="deleteLabel(lbl.id)"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-              </svg>
-            </button>
+            <div class="label-actions">
+              <button class="label-edit-btn focus-ring" aria-label="Edit label" @click.stop="openEditLabel(lbl.id)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                  />
+                </svg>
+              </button>
+              <button
+                v-if="lbl.id.startsWith('custom_')"
+                class="label-delete-btn focus-ring"
+                aria-label="Delete label"
+                @click.stop="deleteLabel(lbl.id)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                </svg>
+              </button>
+            </div>
           </span>
         </li>
       </ul>
@@ -212,7 +280,7 @@ function deleteLabel(id: string) {
   <div v-if="labelModalOpen" class="modal-overlay" @click.self="closeLabelModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h2 class="modal-title">Create new label</h2>
+        <h2 class="modal-title">{{ editMode ? "Edit label" : "Create new label" }}</h2>
         <button class="btn-icon-only focus-ring" aria-label="Close" @click="closeLabelModal">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -226,7 +294,15 @@ function deleteLabel(id: string) {
         </div>
         <div class="form-group">
           <label class="form-label">Color</label>
-          <div class="color-picker">
+          <div class="color-mode-toggle">
+            <button class="color-mode-btn focus-ring" :class="{ 'color-mode-btn-active': !useCustomColor }" @click="useCustomColor = false">
+              Preset
+            </button>
+            <button class="color-mode-btn focus-ring" :class="{ 'color-mode-btn-active': useCustomColor }" @click="useCustomColor = true">
+              Custom
+            </button>
+          </div>
+          <div v-if="!useCustomColor" class="color-picker">
             <button
               v-for="color in ['blue', 'yellow', 'green', 'red', 'purple']"
               :key="color"
@@ -237,11 +313,15 @@ function deleteLabel(id: string) {
               :aria-label="color"
             />
           </div>
+          <div v-else class="custom-color-picker">
+            <input v-model="customColor" type="color" class="color-input focus-ring" aria-label="Choose custom color" />
+            <span class="color-value">{{ customColor }}</span>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary focus-ring" @click="closeLabelModal">Cancel</button>
-        <button class="btn btn-primary focus-ring" @click="createLabel">Create</button>
+        <button class="btn btn-primary focus-ring" @click="saveLabel">{{ editMode ? "Save" : "Create" }}</button>
       </div>
     </div>
   </div>
@@ -262,7 +342,7 @@ function deleteLabel(id: string) {
   display: inline-flex;
   align-items: center;
   gap: var(--space-md);
-  padding: 16px var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
   background: var(--bg-color-compose);
   color: var(--font-color-compose);
   border-radius: var(--radius-md);
@@ -446,19 +526,30 @@ function deleteLabel(id: string) {
   text-transform: uppercase;
 }
 
-.label-delete-btn {
+.label-actions {
   margin-left: auto;
+  display: flex;
+  gap: 2px;
   opacity: 0;
   transition: opacity var(--transition-fast);
+}
+
+.nav-item:hover .label-actions {
+  opacity: 1;
+}
+
+.label-edit-btn,
+.label-delete-btn {
   background: transparent;
   border: none;
   color: var(--font-color-muted);
   cursor: pointer;
   padding: 4px;
+  transition: color var(--transition-fast);
 }
 
-.nav-item:hover .label-delete-btn {
-  opacity: 1;
+.label-edit-btn:hover {
+  color: var(--accent-primary);
 }
 
 .label-delete-btn:hover {
@@ -526,14 +617,72 @@ function deleteLabel(id: string) {
   border-radius: var(--radius-circle);
   border: 2px solid transparent;
   cursor: pointer;
-  transition: transform var(--transition-fast);
 }
 
 .color-option:hover {
   transform: scale(1.1);
+  transition: transform var(--transition-fast);
 }
 
 .color-option-active {
   border-color: var(--font-color-primary);
+}
+
+.color-mode-toggle {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.color-mode-btn {
+  flex: 1;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--bg-color-page);
+  border: 1px solid var(--border-color-subtle);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--font-color-secondary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.color-mode-btn:hover {
+  background: var(--bg-color-row-hover);
+}
+
+.color-mode-btn-active {
+  background: var(--bg-color-nav-active);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.custom-color-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.color-input {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--border-color-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  padding: 2px;
+  background: var(--bg-color-surface);
+}
+
+.color-input:hover {
+  border-color: var(--accent-primary);
+}
+
+.color-value {
+  font-size: var(--font-sm);
+  color: var(--font-color-secondary);
+  font-family: monospace;
 }
 </style>

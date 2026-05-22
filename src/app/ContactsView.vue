@@ -9,6 +9,8 @@ import {
   generateInitials,
   refreshData,
   getLabelText,
+  getLabelColor,
+  getAllLabels,
 } from "../utils/supabase-data";
 import PersonCard from "../components/PersonCard.vue";
 import { useSearch } from "../hooks/useSearch";
@@ -20,6 +22,15 @@ const loading = ref(true);
 const viewMode = ref<"grid" | "list">("grid");
 const { searchQuery } = useSearch();
 const { showToast } = useToast();
+
+const departmentLabels = computed(() => {
+  const allLabels = getAllLabels();
+  const labelMap: Record<string, string> = {};
+  allLabels.forEach((lbl) => {
+    labelMap[lbl.id] = lbl.label;
+  });
+  return labelMap;
+});
 
 onMounted(async () => {
   people.value = getPeople();
@@ -91,6 +102,26 @@ function openEdit(person: Person) {
   showModal.value = true;
 }
 
+function openDuplicate(person: Person) {
+  isEditing.value = false;
+  Object.assign(form, {
+    id: "",
+    name: person.name,
+    email: "", // Clear email to avoid duplicate constraint
+    role: person.role,
+    company: person.company,
+    label: person.label,
+    status: person.status || "inbox",
+    starred: false,
+    unread: false,
+    lastContact: new Date().toLocaleDateString(),
+    snippet: person.snippet || "",
+    messages: [],
+    social: { facebook: person.social?.facebook || "", instagram: person.social?.instagram || "", linkedin: person.social?.linkedin || "" },
+  });
+  showModal.value = true;
+}
+
 async function handleSubmit() {
   try {
     const social = {
@@ -111,7 +142,7 @@ async function handleSubmit() {
       });
     } else {
       const newPerson: Person = {
-        id: generatePersonId(),
+        id: await generatePersonId(),
         name: form.name,
         email: form.email,
         role: form.role,
@@ -193,7 +224,14 @@ async function handleDelete(id: string) {
       <div v-else-if="filteredPeople.length > 0">
         <!-- Grid View -->
         <div v-if="viewMode === 'grid'" class="contacts-grid fade-in">
-          <PersonCard v-for="person in filteredPeople" :key="person.id" :person="person" @edit="openEdit" @delete="handleDelete" />
+          <PersonCard
+            v-for="person in filteredPeople"
+            :key="person.id"
+            :person="person"
+            @edit="openEdit"
+            @delete="handleDelete"
+            @duplicate="openDuplicate"
+          />
         </div>
 
         <!-- List View -->
@@ -212,7 +250,7 @@ async function handleDelete(id: string) {
             <tbody>
               <tr v-for="person in filteredPeople" :key="person.id" class="table-row hover-row">
                 <td class="cell-profile">
-                  <div class="avatar-initials avatar-initials-sm" :data-label="person.label">
+                  <div class="avatar-initials avatar-initials-sm" :style="{ background: getLabelColor(person.label) }">
                     {{ person.initials || generateInitials(person.name) }}
                   </div>
                   <span class="profile-name">{{ person.name }}</span>
@@ -223,7 +261,7 @@ async function handleDelete(id: string) {
                   <span v-if="person.company" class="company-text"> at {{ person.company }}</span>
                 </td>
                 <td class="cell-dept">
-                  <span v-if="person.label" class="badge" :class="`badge-label-${person.label}`">
+                  <span v-if="person.label" class="badge" :style="{ background: getLabelColor(person.label) }">
                     {{ person.labelText || getLabelText(person.label) }}
                   </span>
                 </td>
@@ -271,6 +309,13 @@ async function handleDelete(id: string) {
                   </div>
                 </td>
                 <td class="cell-actions">
+                  <button class="action-btn focus-ring" aria-label="Duplicate" @click.stop="openDuplicate(person)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+                      />
+                    </svg>
+                  </button>
                   <button class="action-btn focus-ring" aria-label="Edit" @click.stop="openEdit(person)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path
@@ -327,11 +372,7 @@ async function handleDelete(id: string) {
               <div class="form-group-custom">
                 <label>Department</label>
                 <select v-model="form.label" class="form-select-custom">
-                  <option value="blue">DMS</option>
-                  <option value="yellow">PlusVenture</option>
-                  <option value="green">Sales</option>
-                  <option value="red">HR</option>
-                  <option value="purple">EX</option>
+                  <option v-for="(label, id) in departmentLabels" :key="id" :value="id">{{ label }}</option>
                 </select>
               </div>
               <div class="form-group-custom">

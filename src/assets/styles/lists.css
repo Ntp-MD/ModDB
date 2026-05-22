@@ -252,11 +252,6 @@
 
 /* ─── Mobile List Optimizations ─── */
 @media (max-width: 599px) {
-  .list-row {
-    padding: 0 var(--space-sm);
-    height: var(--row-height-cozy);
-  }
-
   .row-cell-from {
     width: 100px;
   }

@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useToast } from "../hooks/useToast";
 import { useSearch } from "../hooks/useSearch";
-import { getCachedMessages, getLabelText, refreshData, getPeople, updatePerson } from "../utils/supabase-data";
+import { getCachedMessages, getLabelText, refreshData, getPeople, updatePerson, getLabelColor } from "../utils/supabase-data";
 import { supabase } from "../utils/supabase";
 import type { Message } from "../utils/types";
 
@@ -325,7 +325,9 @@ async function openThread(msg: Message) {
           <div class="row-cell row-cell-from">{{ msg.msg_from }}</div>
 
           <div class="row-cell row-cell-content">
-            <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText || getLabelText(msg.label) }}</span>
+            <span v-if="msg.label" class="badge hide-mobile" :style="{ background: getLabelColor(msg.label) }">{{
+              msg.labelText || getLabelText(msg.label)
+            }}</span>
             <span class="subject">{{ msg.subject }}</span>
             <span class="snippet hide-mobile"> — {{ msg.snippet }}</span>
           </div>
@@ -383,34 +385,6 @@ async function openThread(msg: Message) {
   font-size: var(--font-xs);
   color: var(--font-color-muted);
   white-space: nowrap;
-}
-
-/* Mobile responsive */
-@media (max-width: 599px) {
-  .list-row {
-    padding: 0 var(--space-sm);
-    height: var(--row-height-cozy);
-  }
-
-  .row-cell-from {
-    width: 100px;
-  }
-
-  .row-cell-timestamp {
-    width: 60px;
-  }
-
-  .row-cell-content .snippet {
-    display: none;
-  }
-
-  .inbox-list {
-    max-height: calc(100vh - 200px);
-  }
-
-  .hide-mobile {
-    display: none;
-  }
 }
 
 /* Empty State */

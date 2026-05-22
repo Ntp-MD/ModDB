@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Person } from "../utils/types";
-import { generateInitials, updatePerson, getLabelText } from "../utils/supabase-data";
+import { generateInitials, updatePerson, getLabelText, getLabelColor } from "../utils/supabase-data";
 
 const props = defineProps<{ person: Person }>();
-const emit = defineEmits<{ edit: [person: Person]; delete: [id: string] }>();
+const emit = defineEmits<{ edit: [person: Person]; delete: [id: string]; duplicate: [person: Person] }>();
 
 const initials = computed(() => props.person.initials || generateInitials(props.person.name));
 const labelText = computed(() => props.person.labelText || getLabelText(props.person.label));
@@ -17,7 +17,7 @@ function toggleStar() {
 <template>
   <article class="card card-person fade-in">
     <div class="card-person-header">
-      <div class="avatar-initials avatar-initials-lg" :data-label="person.label" aria-hidden="true">
+      <div class="avatar-initials avatar-initials-lg" :style="{ background: getLabelColor(person.label) }" aria-hidden="true">
         {{ initials }}
       </div>
       <button
@@ -60,8 +60,15 @@ function toggleStar() {
     </div>
 
     <div class="card-person-footer">
-      <span v-if="person.label" class="badge" :class="`badge-label-${person.label}`">{{ labelText }}</span>
+      <span v-if="person.label" class="badge" :style="{ background: getLabelColor(person.label) }">{{ labelText }}</span>
       <div class="card-person-actions">
+        <button class="card-person-btn btn-icon-only focus-ring" aria-label="Duplicate" @click.stop="emit('duplicate', person)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
+            />
+          </svg>
+        </button>
         <button class="card-person-btn btn-icon-only focus-ring" aria-label="Edit" @click.stop="emit('edit', person)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path

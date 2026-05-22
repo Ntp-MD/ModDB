@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "vercel-build": "npm ci && npm run build"
+    "vercel-build": "npm ci && npm run build",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",
@@ -16,8 +19,11 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
+    "@vue/test-utils": "^2.4.5",
+    "happy-dom": "^14.7.1",
     "typescript": "^5.4.2",
     "vite": "^5.1.6",
+    "vitest": "^1.4.0",
     "vue-tsc": "^2.0.6"
   }
 }

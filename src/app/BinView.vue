@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { getCachedMessages, getLabelText, getPeople, refreshData, deletePerson } from "../utils/supabase-data";
+import { getCachedMessages, getLabelText, getPeople, refreshData, deletePerson, getLabelColor } from "../utils/supabase-data";
 import type { Message } from "../utils/types";
 import { supabase } from "../utils/supabase";
 
@@ -176,7 +176,9 @@ async function bulkDeletePermanently() {
           </div>
           <div class="row-cell row-cell-from">{{ msg.msg_from }}</div>
           <div class="row-cell row-cell-content">
-            <span v-if="msg.label" class="badge hide-mobile" :class="`badge-label-${msg.label}`">{{ msg.labelText || getLabelText(msg.label) }}</span>
+            <span v-if="msg.label" class="badge hide-mobile" :style="{ background: getLabelColor(msg.label) }">{{
+              msg.labelText || getLabelText(msg.label)
+            }}</span>
             <span class="subject">{{ msg.subject }}</span>
             <span class="snippet hide-mobile"> — {{ msg.snippet }}</span>
           </div>
