@@ -744,6 +744,9 @@ async function handleDelete(id: string) {
   gap: var(--space-lg);
 }
 
+@media (max-width: 650px) {
+}
+
 @media (min-width: 650px) {
   .form-grid {
     grid-template-columns: repeat(2, 1fr);

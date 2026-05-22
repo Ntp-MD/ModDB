@@ -252,6 +252,14 @@
 
 /* ─── Mobile List Optimizations ─── */
 @media (max-width: 599px) {
+  .row-cell-checkbox {
+    width: auto;
+  }
+
+  .list-row {
+    padding: 0 var(--space-sm);
+  }
+
   .row-cell-from {
     width: 100px;
   }

@@ -170,6 +170,7 @@
   .main-content-inner {
     display: flex;
     flex-direction: column;
+    padding: 0 var(--space-sm);
   }
 }
 
