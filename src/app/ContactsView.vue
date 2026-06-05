@@ -188,7 +188,7 @@ async function handleDelete(id: string) {
       <div class="contacts-header main-toolbar">
         <div class="toolbar-left">
           <h1 class="page-title">Contacts</h1>
-          <span class="contacts-count">({{ filteredPeople.length }} contacts)</span>
+          <span class="contacts-count">({{ filteredPeople.length }}<span class="contacts-count-text"> contacts</span>)</span>
         </div>
         <div class="toolbar-actions">
           <div class="view-toggle">
@@ -438,16 +438,21 @@ async function handleDelete(id: string) {
 }
 
 .contacts-count {
-  font-size: var(--font-sm);
+  font-size: var(--font-md);
   color: var(--font-color-muted);
   font-weight: 500;
-  margin-top: 4px;
+}
+
+@media (max-width: 599px) {
+  .contacts-count-text {
+    display: none;
+  }
 }
 
 .toolbar-actions {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
 .view-toggle {
@@ -644,7 +649,9 @@ async function handleDelete(id: string) {
 }
 
 .cell-actions {
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
 }
 
 .action-btn {
@@ -661,7 +668,6 @@ async function handleDelete(id: string) {
   transition:
     background var(--transition-fast),
     color var(--transition-fast);
-  margin-left: 2px;
 }
 
 .action-btn:hover {
@@ -688,12 +694,22 @@ async function handleDelete(id: string) {
   padding: var(--space-lg);
   width: 90%;
   max-width: 800px;
+  max-height: 90vh;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
   border: 1px solid var(--border-color-subtle);
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 599px) {
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    padding: var(--space-md);
+  }
 }
 
 .modal-header {
@@ -736,6 +752,9 @@ async function handleDelete(id: string) {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .form-grid {
@@ -809,8 +828,14 @@ async function handleDelete(id: string) {
 
 .form-group-row-custom {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--space-sm);
+}
+
+@media (min-width: 650px) {
+  .form-group-row-custom {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .modal-actions-custom {

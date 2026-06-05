@@ -44,10 +44,12 @@
 }
 
 .inbox-tab {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-sm);
-  padding: 0 var(--space-lg);
+  padding: 0 var(--space-sm);
   height: 56px;
   font-size: var(--font-sm);
   font-weight: 500;
@@ -258,14 +260,6 @@
 
   .list-row {
     padding: 0 var(--space-sm);
-  }
-
-  .row-cell-from {
-    width: 100px;
-  }
-
-  .row-cell-timestamp {
-    width: 60px;
   }
 
   .row-cell-content .snippet {

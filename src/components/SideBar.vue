@@ -485,7 +485,6 @@ async function deleteLabel(id: string) {
   height: 32px;
   min-height: 32px;
   text-decoration: none;
-  margin-right: var(--space-sm);
 }
 
 .nav-item:hover {

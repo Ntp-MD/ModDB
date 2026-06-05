@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   padding: 0 var(--space-sm);
-  gap: 4px;
+  gap: var(--space-sm);
   z-index: var(--z-topbar);
 }
 
@@ -159,7 +159,7 @@
   }
 
   .main-content {
-    padding: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
   }
 
   .main-toolbar {
@@ -170,7 +170,6 @@
   .main-content-inner {
     display: flex;
     flex-direction: column;
-    padding: 0 var(--space-sm);
   }
 }
 

@@ -190,6 +190,14 @@ function toggleMinimize() {
   overflow: hidden;
 }
 
+@media (max-width: 599px) {
+  .compose-window {
+    width: 100%;
+    max-width: 100%;
+    right: 0;
+  }
+}
+
 .compose-window-minimized {
   height: auto;
 }

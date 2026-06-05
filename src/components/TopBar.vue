@@ -180,7 +180,6 @@ function closeSettings() {
   gap: 4px;
   flex-shrink: 0;
   text-decoration: none;
-  margin-right: var(--space-sm);
 }
 
 .topbar-logo img {
@@ -202,6 +201,12 @@ function closeSettings() {
   min-width: 0;
   max-width: 720px;
   margin: 0 var(--space-md);
+}
+
+@media (max-width: 599px) {
+  .topbar-search {
+    max-width: none;
+  }
 }
 
 .search-bar-wrap {
