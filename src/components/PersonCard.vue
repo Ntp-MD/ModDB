@@ -15,41 +15,69 @@ function toggleStar() {
 </script>
 
 <template>
-  <article class="card card-person fade-in">
-    <div class="card-person-header">
-      <div class="avatar-initials avatar-initials-lg" :style="{ background: getLabelColor(person.label) }" aria-hidden="true">
+  <article class="person-card fade-in">
+    <div class="person-card-main">
+      <div class="person-card-avatar" :style="{ background: getLabelColor(person.label) }" aria-hidden="true">
         {{ initials }}
       </div>
-      <button
-        class="star-btn focus-ring"
-        :class="{ 'star-btn-active': person.starred }"
-        :aria-label="person.starred ? 'Unstar' : 'Star'"
-        @click.stop="toggleStar"
-      >
-        ★
-      </button>
+
+      <div class="person-card-info">
+        <div class="person-card-header">
+          <h3 class="person-card-name">{{ person.name }}</h3>
+          <button
+            class="person-card-star focus-ring"
+            :class="{ 'person-card-star-active': person.starred }"
+            :aria-label="person.starred ? 'Unstar' : 'Star'"
+            @click.stop="toggleStar"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            </svg>
+          </button>
+        </div>
+
+        <p class="person-card-role">{{ person.role || "No title" }}</p>
+        <p class="person-card-company">{{ person.company || "No company" }}</p>
+        <p class="person-card-email">{{ person.email }}</p>
+      </div>
     </div>
 
-    <div class="card-person-body">
-      <h3 class="card-person-name">{{ person.name }}</h3>
-      <p class="card-person-role">{{ person.role || "No title" }}</p>
-      <p class="card-person-company">{{ person.company || "No company" }}</p>
-      <div v-if="person.social" class="card-social-links">
-        <a v-if="person.social.facebook" :href="person.social.facebook" target="_blank" class="social-link social-facebook" aria-label="Facebook">
+    <div class="person-card-footer">
+      <span v-if="person.label" class="person-card-badge" :style="{ background: getLabelColor(person.label) }">{{ labelText }}</span>
+      <div v-if="person.social" class="person-card-social">
+        <a
+          v-if="person.social.facebook"
+          :href="person.social.facebook"
+          target="_blank"
+          class="person-card-social-link person-card-social-facebook"
+          aria-label="Facebook"
+        >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path
               d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"
             />
           </svg>
         </a>
-        <a v-if="person.social.instagram" :href="person.social.instagram" target="_blank" class="social-link social-instagram" aria-label="Instagram">
+        <a
+          v-if="person.social.instagram"
+          :href="person.social.instagram"
+          target="_blank"
+          class="person-card-social-link person-card-social-instagram"
+          aria-label="Instagram"
+        >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path
               d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 2.191 4.919 5.4C21.89 8.9 21.9 9.28 21.9 12.484s-.012 3.584-.07 4.85c-.149 3.204-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.26-.149-4.771-2.199-4.919-4.92-.058-1.265-.07-1.644-.07-4.849s.012-3.584.07-4.85c.149-3.204 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051C.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.668-.072-4.948-.2-4.358-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"
             />
           </svg>
         </a>
-        <a v-if="person.social.linkedin" :href="person.social.linkedin" target="_blank" class="social-link social-linkedin" aria-label="LinkedIn">
+        <a
+          v-if="person.social.linkedin"
+          :href="person.social.linkedin"
+          target="_blank"
+          class="person-card-social-link person-card-social-linkedin"
+          aria-label="LinkedIn"
+        >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path
               d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
@@ -57,26 +85,22 @@ function toggleStar() {
           </svg>
         </a>
       </div>
-    </div>
-
-    <div class="card-person-footer">
-      <span v-if="person.label" class="badge" :style="{ background: getLabelColor(person.label) }">{{ labelText }}</span>
-      <div class="card-person-actions">
-        <button class="card-person-btn btn-icon-only focus-ring" aria-label="Duplicate" @click.stop="emit('duplicate', person)">
+      <div class="person-card-actions">
+        <button class="person-card-action focus-ring" aria-label="Duplicate" @click.stop="emit('duplicate', person)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path
               d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
             />
           </svg>
         </button>
-        <button class="card-person-btn btn-icon-only focus-ring" aria-label="Edit" @click.stop="emit('edit', person)">
+        <button class="person-card-action focus-ring" aria-label="Edit" @click.stop="emit('edit', person)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path
               d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
             />
           </svg>
         </button>
-        <button class="card-person-btn btn-icon-only focus-ring" aria-label="Delete" @click.stop="emit('delete', person.id)">
+        <button class="person-card-action focus-ring person-card-action-delete" aria-label="Delete" @click.stop="emit('delete', person.id)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
           </svg>
@@ -87,84 +111,77 @@ function toggleStar() {
 </template>
 
 <style scoped>
-.card-person {
+.person-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
-  padding: var(--space-md);
   background: var(--bg-color-surface);
   border: 1px solid var(--border-color-subtle);
   border-radius: var(--radius-md);
-  transition:
-    transform var(--transition-normal),
-    box-shadow var(--transition-normal);
-  cursor: default;
-  position: relative;
   overflow: hidden;
+  transition:
+    box-shadow var(--transition-normal),
+    border-color var(--transition-normal);
 }
 
-.card-person::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: transparent;
-  transition: background var(--transition-fast);
+.person-card:hover {
+  box-shadow: var(--shadow-md);
 }
 
-.card-person:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.card-person:hover::before {
-  background: var(--accent-primary);
-}
-
-.card-person-header {
+.person-card-main {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  text-align: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
 }
 
-.avatar-initials-lg {
-  width: 64px;
-  height: 64px;
+.person-card-avatar {
+  width: var(--avatar-size, 56px);
+  height: var(--avatar-size, 56px);
+  border-radius: var(--radius-circle);
+  color: var(--font-color-white);
   font-size: var(--font-lg);
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-circle);
-  color: var(--font-color-white);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
 }
 
-.avatar-initials-lg[data-label="red"] {
-  background: var(--label-red);
-}
-.avatar-initials-lg[data-label="yellow"] {
-  background: var(--label-yellow);
-}
-.avatar-initials-lg[data-label="green"] {
-  background: var(--label-green);
-}
-.avatar-initials-lg[data-label="blue"] {
-  background: var(--label-blue);
-}
-.avatar-initials-lg[data-label="purple"] {
-  background: var(--label-purple);
+.person-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
 }
 
-.star-btn {
-  width: 32px;
-  height: 32px;
+.person-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.person-card-name {
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--font-color-primary);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-card-star {
+  width: var(--icon-btn-size, 28px);
+  height: var(--icon-btn-size, 28px);
   border-radius: var(--radius-circle);
   background: transparent;
   border: none;
-  font-size: 20px;
   color: var(--font-color-muted);
   cursor: pointer;
   display: flex;
@@ -173,55 +190,56 @@ function toggleStar() {
   transition:
     color var(--transition-fast),
     background var(--transition-fast);
+  flex-shrink: 0;
 }
 
-.star-btn:hover {
+.person-card-star:hover {
   background: var(--bg-color-row-hover);
   color: var(--font-color-primary);
 }
 
-.star-btn-active {
+.person-card-star-active {
   color: #f9ab00;
 }
 
-.card-person-body {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: var(--space-xs);
-}
-
-.card-person-name {
-  font-size: var(--font-md);
-  font-weight: 600;
-  color: var(--font-color-primary);
-  line-height: 1.2;
-}
-
-.card-person-role {
+.person-card-role {
   font-size: var(--font-sm);
   color: var(--font-color-secondary);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.card-person-company {
+.person-card-company {
   font-size: var(--font-xs);
   color: var(--font-color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.card-social-links {
+.person-card-email {
+  font-size: var(--font-xs);
+  color: var(--font-color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-card-social {
   display: flex;
+  justify-content: center;
   gap: var(--space-xs);
-  margin-top: var(--space-xs);
 }
 
-.social-link {
+.person-card-social-link {
+  width: var(--social-icon-size, 24px);
+  height: var(--social-icon-size, 24px);
+  border-radius: var(--radius-circle);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-circle);
   color: var(--font-color-white);
   text-decoration: none;
   transition:
@@ -229,55 +247,95 @@ function toggleStar() {
     opacity var(--transition-fast);
 }
 
-.social-link:hover {
+.person-card-social-link:hover {
   transform: scale(1.1);
   opacity: 0.9;
 }
 
-.social-facebook {
+.person-card-social-facebook {
   background: #1877f2;
 }
 
-.social-instagram {
+.person-card-social-instagram {
   background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
 }
 
-.social-linkedin {
+.person-card-social-linkedin {
   background: #0077b5;
 }
 
-.card-person-footer {
+.person-card-footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: var(--space-sm);
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-color-page);
   border-top: 1px solid var(--border-color-subtle);
-  padding-top: var(--space-sm);
 }
 
-.card-person-actions {
-  display: flex;
-  gap: 4px;
+.person-card-badge {
+  font-size: var(--font-xs);
+  font-weight: 500;
+  color: var(--font-color-white);
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-sm);
+  max-width: calc(100% - 96px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.card-person-btn {
-  width: 32px;
-  height: 32px;
+.person-card-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: var(--space-xs);
+  transition: opacity var(--transition-fast);
+  margin-left: auto;
+}
+
+.person-card-action {
+  width: var(--icon-btn-size, 28px);
+  height: var(--icon-btn-size, 28px);
   border-radius: var(--radius-circle);
   background: transparent;
   border: none;
   color: var(--font-color-muted);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition:
     background var(--transition-fast),
     color var(--transition-fast);
 }
 
-.card-person-btn:hover {
+.person-card-action:hover {
   background: var(--bg-color-row-hover);
   color: var(--font-color-primary);
+}
+
+.person-card-action-delete:hover {
+  background: var(--accent-danger-bg);
+  color: var(--accent-danger);
+}
+
+@media (min-width: 480px) {
+  .person-card-main {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .person-card-header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .person-card-info {
+    align-items: flex-start;
+  }
+
+  .person-card-social {
+    justify-content: flex-start;
+  }
 }
 </style>

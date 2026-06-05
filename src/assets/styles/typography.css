@@ -35,9 +35,3 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-@media screen and (max-width: 992px) {
-  .page-title {
-    font-size: var(--font-2xl);
-  }
-}

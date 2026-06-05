@@ -1,6 +1,6 @@
 /* ─── Buttons ─── */
 .btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   border-radius: var(--radius-sm);
   gap: var(--space-sm);
@@ -16,7 +16,7 @@
 }
 
 .btn-compose {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-lg);

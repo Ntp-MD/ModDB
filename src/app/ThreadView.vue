@@ -177,20 +177,20 @@ async function archiveMessage() {
                 @blur="replyFocused = replyText.length > 0"
               />
               <div v-if="replyFocused || replyText" class="thread-reply-footer">
-                <button class="compose-send-btn focus-ring">
+                <button class="reply-send-btn focus-ring">
                   Send
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                   </svg>
                 </button>
-                <button class="compose-footer-btn focus-ring" aria-label="Attach files">
+                <button class="btn-icon-only focus-ring" aria-label="Attach files">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path
                       d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"
                     />
                   </svg>
                 </button>
-                <button class="compose-footer-btn focus-ring" aria-label="Insert link">
+                <button class="btn-icon-only focus-ring" aria-label="Insert link">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path
                       d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"
@@ -308,13 +308,6 @@ async function archiveMessage() {
   flex-shrink: 0;
 }
 
-.thread-social-links {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  margin-top: var(--space-sm);
-}
-
 .thread-social-link {
   display: flex;
   align-items: center;
@@ -332,13 +325,6 @@ async function archiveMessage() {
 .thread-social-icon {
   width: 100%;
   height: 100%;
-}
-
-.thread-timestamp {
-  font-size: var(--font-xs);
-  color: var(--font-color-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .thread-msg-actions {
@@ -414,7 +400,7 @@ async function archiveMessage() {
 }
 
 .thread-reply-trigger {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-md);
@@ -452,8 +438,8 @@ async function archiveMessage() {
   padding-top: var(--space-sm);
 }
 
-.compose-send-btn {
-  display: inline-flex;
+.reply-send-btn {
+  display: flex;
   align-items: center;
   gap: var(--space-xs);
   padding: 0 var(--space-md);
@@ -469,36 +455,8 @@ async function archiveMessage() {
   flex-shrink: 0;
 }
 
-.compose-send-btn:hover {
+.reply-send-btn:hover {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.compose-footer-btn {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--font-color-muted);
-  cursor: pointer;
-  border-radius: var(--radius-circle);
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.compose-footer-btn:hover {
-  background: var(--bg-color-row-hover);
-  color: var(--font-color-primary);
-}
-
-/* Thread Container */
-.thread {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
 }
 
 /* Empty State */

@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { getCachedMessages, getLabelText, getLabelColor } from "../utils/supabase-data";
+import { MY_EMAIL } from "../utils/supabase";
 import type { Message } from "../utils/types";
 
 const router = useRouter();
@@ -10,7 +11,7 @@ const messages = ref<Message[]>([]);
 
 function reloadMessages() {
   const allMessages = getCachedMessages();
-  messages.value = allMessages.filter((msg: Message) => msg.msg_to === "me@example.com");
+  messages.value = allMessages.filter((msg: Message) => msg.msg_to === MY_EMAIL);
 }
 
 reloadMessages();

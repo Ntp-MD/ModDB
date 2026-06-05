@@ -253,24 +253,36 @@
 }
 
 /* ─── Mobile List Optimizations ─── */
-@media (max-width: 599px) {
-  .row-cell-checkbox {
-    width: auto;
-  }
+.row-cell-checkbox {
+  width: auto;
+}
 
-  .list-row {
-    padding: 0 var(--space-sm);
-  }
+.list-row {
+  padding: 0 var(--space-sm);
+}
 
+.row-cell-content .snippet {
+  display: none;
+}
+
+.inbox-list {
+  max-height: calc(100vh - 200px);
+}
+
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 600px) {
   .row-cell-content .snippet {
-    display: none;
+    display: block;
   }
 
   .inbox-list {
-    max-height: calc(100vh - 200px);
+    max-height: none;
   }
 
   .hide-mobile {
-    display: none;
+    display: initial;
   }
 }

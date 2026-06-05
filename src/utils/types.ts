@@ -6,6 +6,9 @@ export interface NavItem {
   count?: number;
 }
 
+export type PresetLabel = "red" | "yellow" | "green" | "blue" | "purple";
+export type LabelColor = PresetLabel | string;
+
 export interface Message {
   id: string;
   person_id?: string;
@@ -18,7 +21,7 @@ export interface Message {
   timestamp: string;
   unread: boolean;
   starred: boolean;
-  label?: "red" | "yellow" | "green" | "blue" | "purple";
+  label?: LabelColor;
   labelText?: string;
   created_at?: string;
   updated_at?: string;
@@ -30,7 +33,7 @@ export interface Person {
   email: string;
   role: string;
   company: string;
-  label: "red" | "yellow" | "green" | "blue" | "purple";
+  label: LabelColor;
   labelText?: string;
   starred: boolean;
   unread: boolean;

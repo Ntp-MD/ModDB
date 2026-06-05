@@ -54,8 +54,9 @@ const filteredPeople = computed(() => {
   return result;
 });
 
-const showModal = ref(false);
-const isEditing = ref(false);
+const isModalOpen = ref(false);
+const isEditMode = ref(false);
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const form = reactive({
   id: "",
   name: "",
@@ -72,8 +73,8 @@ const form = reactive({
   social: { facebook: "", instagram: "", linkedin: "" },
 });
 
-function openAdd() {
-  isEditing.value = false;
+function openCreateContact() {
+  isEditMode.value = false;
   Object.assign(form, {
     id: "",
     name: "",
@@ -89,21 +90,21 @@ function openAdd() {
     messages: [],
     social: { facebook: "", instagram: "", linkedin: "" },
   });
-  showModal.value = true;
+  isModalOpen.value = true;
 }
 
-function openEdit(person: Person) {
-  isEditing.value = true;
+function openEditContact(person: Person) {
+  isEditMode.value = true;
   Object.assign(form, {
     ...person,
     status: person.status || "inbox",
     social: { facebook: person.social?.facebook || "", instagram: person.social?.instagram || "", linkedin: person.social?.linkedin || "" },
   });
-  showModal.value = true;
+  isModalOpen.value = true;
 }
 
-function openDuplicate(person: Person) {
-  isEditing.value = false;
+function openDuplicateContact(person: Person) {
+  isEditMode.value = false;
   Object.assign(form, {
     id: "",
     name: person.name,
@@ -119,10 +120,22 @@ function openDuplicate(person: Person) {
     messages: [],
     social: { facebook: person.social?.facebook || "", instagram: person.social?.instagram || "", linkedin: person.social?.linkedin || "" },
   });
-  showModal.value = true;
+  isModalOpen.value = true;
 }
 
 async function handleSubmit() {
+  if (!form.name.trim()) {
+    showToast("Name is required");
+    return;
+  }
+  if (!form.email.trim()) {
+    showToast("Email is required");
+    return;
+  }
+  if (!EMAIL_RE.test(form.email.trim())) {
+    showToast("Invalid email address");
+    return;
+  }
   try {
     const social = {
       ...(form.social.facebook ? { facebook: form.social.facebook } : {}),
@@ -130,7 +143,7 @@ async function handleSubmit() {
       ...(form.social.linkedin ? { linkedin: form.social.linkedin } : {}),
     };
 
-    if (isEditing.value) {
+    if (isEditMode.value) {
       await updatePerson(form.id, {
         name: form.name,
         email: form.email,
@@ -161,7 +174,7 @@ async function handleSubmit() {
     }
     await refreshData();
     people.value = getPeople();
-    showModal.value = false;
+    isModalOpen.value = false;
   } catch (error) {
     console.error("Error saving contact:", error);
     showToast("Failed to save contact", "Error");
@@ -213,7 +226,7 @@ async function handleDelete(id: string) {
               </svg>
             </button>
           </div>
-          <button class="btn btn-add focus-ring" @click="openAdd">+ Add Contact</button>
+          <button class="btn btn-primary focus-ring" @click="openCreateContact">+ Add Contact</button>
         </div>
       </div>
 
@@ -228,9 +241,9 @@ async function handleDelete(id: string) {
             v-for="person in filteredPeople"
             :key="person.id"
             :person="person"
-            @edit="openEdit"
+            @edit="openEditContact"
             @delete="handleDelete"
-            @duplicate="openDuplicate"
+            @duplicate="openDuplicateContact"
           />
         </div>
 
@@ -309,21 +322,21 @@ async function handleDelete(id: string) {
                   </div>
                 </td>
                 <td class="cell-actions">
-                  <button class="action-btn focus-ring" aria-label="Duplicate" @click.stop="openDuplicate(person)">
+                  <button class="row-action-btn focus-ring" aria-label="Duplicate" @click.stop="openDuplicateContact(person)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path
                         d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"
                       />
                     </svg>
                   </button>
-                  <button class="action-btn focus-ring" aria-label="Edit" @click.stop="openEdit(person)">
+                  <button class="row-action-btn focus-ring" aria-label="Edit" @click.stop="openEditContact(person)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path
                         d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
                       />
                     </svg>
                   </button>
-                  <button class="action-btn focus-ring" aria-label="Delete" @click.stop="handleDelete(person.id)">
+                  <button class="row-action-btn focus-ring" aria-label="Delete" @click.stop="handleDelete(person.id)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                     </svg>
@@ -344,40 +357,40 @@ async function handleDelete(id: string) {
         </svg>
         <h2 class="empty-state-title">{{ searchQuery ? "No matching contacts" : "No contacts yet" }}</h2>
         <p class="empty-state-text">{{ searchQuery ? "Try searching with different terms" : "Get started by adding your first team contact." }}</p>
-        <button class="btn btn-add focus-ring" @click="openAdd">+ Add Contact</button>
+        <button class="btn btn-primary focus-ring" @click="openCreateContact">+ Add Contact</button>
       </div>
     </div>
   </main>
 
-  <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+  <div v-if="isModalOpen" class="modal-overlay" @click.self="isModalOpen = false">
     <div class="modal fade-in">
       <div class="modal-header">
-        <h2 class="modal-title-custom">{{ isEditing ? "Edit Contact" : "Add Contact" }}</h2>
-        <button class="btn-icon-only focus-ring close-modal-btn" aria-label="Close" @click="showModal = false">✕</button>
+        <h2 class="modal-title-custom">{{ isEditMode ? "Edit Contact" : "Add Contact" }}</h2>
+        <button class="btn-icon-only focus-ring" aria-label="Close" @click="isModalOpen = false">✕</button>
       </div>
       <form class="modal-form" @submit.prevent="handleSubmit">
         <div class="form-grid">
           <!-- Column 1: Personal Info -->
           <div class="form-section">
             <h3 class="form-section-title">Personal Details</h3>
-            <div class="form-group-custom">
-              <label>Name <span class="required">*</span></label>
-              <input v-model="form.name" type="text" required placeholder="Full name" class="form-input-custom" />
+            <div class="form-group">
+              <label class="form-label">Name <span class="required">*</span></label>
+              <input v-model="form.name" type="text" required placeholder="Full name" class="form-input focus-ring" />
             </div>
-            <div class="form-group-custom">
-              <label>Email <span class="required">*</span></label>
-              <input v-model="form.email" type="email" required placeholder="email@example.com" class="form-input-custom" />
+            <div class="form-group">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input v-model="form.email" type="email" required placeholder="email@example.com" class="form-input focus-ring" />
             </div>
             <div class="form-group-row-custom">
-              <div class="form-group-custom">
-                <label>Department</label>
-                <select v-model="form.label" class="form-select-custom">
+              <div class="form-group">
+                <label class="form-label">Department</label>
+                <select v-model="form.label" class="form-select focus-ring">
                   <option v-for="(label, id) in departmentLabels" :key="id" :value="id">{{ label }}</option>
                 </select>
               </div>
-              <div class="form-group-custom">
-                <label>Status</label>
-                <select v-model="form.status" class="form-select-custom">
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select v-model="form.status" class="form-select focus-ring">
                   <option value="inbox">Inbox</option>
                   <option value="starred">Starred</option>
                   <option value="bin">Bin</option>
@@ -390,33 +403,33 @@ async function handleDelete(id: string) {
           <div class="form-section">
             <h3 class="form-section-title">Work & Social Links</h3>
             <div class="form-group-row-custom">
-              <div class="form-group-custom">
-                <label>Role</label>
-                <input v-model="form.role" type="text" placeholder="Job title" class="form-input-custom" />
+              <div class="form-group">
+                <label class="form-label">Role</label>
+                <input v-model="form.role" type="text" placeholder="Job title" class="form-input focus-ring" />
               </div>
-              <div class="form-group-custom">
-                <label>Company</label>
-                <input v-model="form.company" type="text" placeholder="Company name" class="form-input-custom" />
+              <div class="form-group">
+                <label class="form-label">Company</label>
+                <input v-model="form.company" type="text" placeholder="Company name" class="form-input focus-ring" />
               </div>
             </div>
-            <div class="form-group-custom">
-              <label>Facebook</label>
-              <input v-model="form.social.facebook" type="url" placeholder="https://facebook.com/..." class="form-input-custom" />
+            <div class="form-group">
+              <label class="form-label">Facebook</label>
+              <input v-model="form.social.facebook" type="url" placeholder="https://facebook.com/..." class="form-input focus-ring" />
             </div>
-            <div class="form-group-custom">
-              <label>Instagram</label>
-              <input v-model="form.social.instagram" type="url" placeholder="https://instagram.com/..." class="form-input-custom" />
+            <div class="form-group">
+              <label class="form-label">Instagram</label>
+              <input v-model="form.social.instagram" type="url" placeholder="https://instagram.com/..." class="form-input focus-ring" />
             </div>
-            <div class="form-group-custom">
-              <label>LinkedIn</label>
-              <input v-model="form.social.linkedin" type="url" placeholder="https://linkedin.com/in/..." class="form-input-custom" />
+            <div class="form-group">
+              <label class="form-label">LinkedIn</label>
+              <input v-model="form.social.linkedin" type="url" placeholder="https://linkedin.com/in/..." class="form-input focus-ring" />
             </div>
           </div>
         </div>
 
         <div class="modal-actions-custom">
-          <button type="button" class="btn-cancel-custom focus-ring" @click="showModal = false">Cancel</button>
-          <button type="submit" class="btn-save-custom focus-ring">{{ isEditing ? "Save" : "Add" }}</button>
+          <button type="button" class="btn btn-ghost focus-ring" @click="isModalOpen = false">Cancel</button>
+          <button type="submit" class="btn btn-primary focus-ring">{{ isEditMode ? "Save" : "Add" }}</button>
         </div>
       </form>
     </div>
@@ -443,9 +456,13 @@ async function handleDelete(id: string) {
   font-weight: 500;
 }
 
-@media (max-width: 599px) {
+.contacts-count-text {
+  display: none;
+}
+
+@media (min-width: 600px) {
   .contacts-count-text {
-    display: none;
+    display: inline;
   }
 }
 
@@ -488,26 +505,6 @@ async function handleDelete(id: string) {
   background: var(--bg-color-surface);
   color: var(--accent-primary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.btn-add {
-  background: var(--accent-primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-md);
-  height: 36px;
-  font-size: var(--font-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.btn-add:hover {
-  background: #004dc0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 /* ─── Contacts Table List View ─── */
@@ -654,27 +651,6 @@ async function handleDelete(id: string) {
   gap: 2px;
 }
 
-.action-btn {
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-circle);
-  background: transparent;
-  border: none;
-  color: var(--font-color-muted);
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.action-btn:hover {
-  background: var(--bg-color-row-hover-strong);
-  color: var(--font-color-primary);
-}
-
 /* ─── Redesigned Premium Modal ─── */
 .modal-overlay {
   position: fixed;
@@ -690,10 +666,10 @@ async function handleDelete(id: string) {
 
 .modal {
   background: var(--bg-color-surface);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  width: 90%;
-  max-width: 800px;
+  border-radius: 0;
+  padding: var(--space-md);
+  width: 100%;
+  max-width: 100%;
   max-height: 90vh;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.15);
   display: flex;
@@ -703,12 +679,12 @@ async function handleDelete(id: string) {
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@media (max-width: 599px) {
+@media (min-width: 600px) {
   .modal {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 0;
-    padding: var(--space-md);
+    width: 90%;
+    max-width: 800px;
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
   }
 }
 
@@ -726,28 +702,6 @@ async function handleDelete(id: string) {
   color: var(--font-color-primary);
 }
 
-.close-modal-btn {
-  font-size: var(--font-md);
-  color: var(--font-color-muted);
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-circle);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-}
-
-.close-modal-btn:hover {
-  background: var(--bg-color-row-hover);
-  color: var(--font-color-primary);
-}
-
 .modal-form {
   display: flex;
   flex-direction: column;
@@ -761,9 +715,6 @@ async function handleDelete(id: string) {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-lg);
-}
-
-@media (max-width: 650px) {
 }
 
 @media (min-width: 650px) {
@@ -789,41 +740,8 @@ async function handleDelete(id: string) {
   margin-bottom: var(--space-xs);
 }
 
-.form-group-custom {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.form-group-custom label {
-  font-size: var(--font-xs);
-  color: var(--font-color-secondary);
-  font-weight: 600;
-}
-
 .required {
   color: var(--accent-danger);
-}
-
-.form-input-custom,
-.form-select-custom {
-  height: 38px;
-  padding: 0 var(--space-sm);
-  border: 1px solid var(--border-color-subtle);
-  border-radius: var(--radius-sm);
-  background: var(--bg-color-surface);
-  color: var(--font-color-primary);
-  font-size: var(--font-sm);
-  outline: none;
-  transition:
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.form-input-custom:focus,
-.form-select-custom:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--accent-primary-light);
 }
 
 .form-group-row-custom {
@@ -845,43 +763,6 @@ async function handleDelete(id: string) {
   border-top: 1px solid var(--border-color-subtle);
   padding-top: var(--space-md);
   margin-top: var(--space-sm);
-}
-
-.btn-cancel-custom {
-  background: transparent;
-  border: 1px solid var(--border-color-subtle);
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-lg);
-  height: 38px;
-  font-size: var(--font-sm);
-  font-weight: 500;
-  cursor: pointer;
-  color: var(--font-color-secondary);
-  transition: background var(--transition-fast);
-}
-
-.btn-cancel-custom:hover {
-  background: var(--bg-color-row-hover);
-}
-
-.btn-save-custom {
-  background: var(--accent-primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0 var(--space-lg);
-  height: 38px;
-  font-size: var(--font-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.btn-save-custom:hover {
-  background: #004dc0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 @keyframes slideUp {

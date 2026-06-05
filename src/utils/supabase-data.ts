@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { supabase } from './supabase'
+import { supabase, MY_EMAIL } from './supabase'
 import type { Person, Message } from './types'
 
 let personIdCounter = 1
@@ -226,12 +226,15 @@ export async function generateMessageId(): Promise<string> {
 }
 
 export function generateInitials(name: string): string {
-  return name
+  const trimmed = name.trim();
+  if (!trimmed) return "?";
+  return trimmed
     .split(" ")
+    .filter((n) => n.length > 0)
     .map((n) => n[0])
     .join("")
     .toUpperCase()
-    .substring(0, 2)
+    .substring(0, 2);
 }
 
 // Supabase data functions
@@ -336,9 +339,10 @@ export async function addPerson(person: Person): Promise<void> {
       person_id: person.id,
       msg_from: person.name,
       from_initials: generateInitials(person.name),
-      msg_to: 'me@example.com',
+      msg_to: MY_EMAIL,
       subject: `New contact: ${person.name}`,
       snippet: person.snippet || `Added ${person.name} from ${person.company}`,
+
       body: `Hi,\n\nI've added ${person.name} (${person.role} at ${person.company}) to my contacts.\n\nEmail: ${person.email}\n\nBest regards`,
       timestamp: timestamp,
       unread: true,
@@ -364,10 +368,15 @@ export async function updatePerson(id: string, updates: Partial<Person>): Promis
     if (starred !== undefined) safeUpdates.starred = starred;
     if (unread !== undefined) safeUpdates.unread = unread;
     
-    // Merge social and status updates into JSONB social column
-    const existingPerson = mockPeople.value.find(p => p.id === id);
-    const existingSocial = existingPerson?.social && typeof existingPerson.social === 'object' ? existingPerson.social : {};
-    const newStatus = status !== undefined ? status : (existingPerson?.status || 'inbox');
+    // Fetch fresh person data from DB to avoid stale cache issues
+    const { data: existing } = await supabase
+      .from('people')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    const existingSocial = existing?.social && typeof existing.social === 'object' ? existing.social : {};
+    const newStatus = status !== undefined ? status : (existingSocial?.status || 'inbox');
     const newSocial = social && typeof social === 'object' ? social : {};
     
     safeUpdates.social = {
@@ -392,7 +401,7 @@ export async function updatePerson(id: string, updates: Partial<Person>): Promis
     if (newStatus === 'inbox') {
       const hasMessage = cachedMessages.value.some(m => m.person_id === id);
       if (!hasMessage) {
-        const personName = name || existingPerson?.name || 'Contact';
+        const personName = name || existing?.name || 'Contact';
         const messageId = await generateMessageId();
         const now = new Date();
         const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -404,14 +413,14 @@ export async function updatePerson(id: string, updates: Partial<Person>): Promis
             person_id: id,
             msg_from: personName,
             from_initials: generateInitials(personName),
-            msg_to: 'me@example.com',
+            msg_to: MY_EMAIL,
             subject: `New contact: ${personName}`,
-            snippet: updates.snippet || existingPerson?.snippet || `Added ${personName}`,
+            snippet: updates.snippet || existing?.snippet || `Added ${personName}`,
             body: `Hi,\n\nI've added ${personName} to my contacts.\n\nBest regards`,
             timestamp: timestamp,
             unread: true,
             starred: false,
-            label: label || existingPerson?.label || 'blue'
+            label: label || existing?.label || 'blue'
           });
       }
     }
@@ -460,18 +469,20 @@ export const cachedMessages = ref<Message[]>([])
 export const customLabels = ref<{ id: string; label: string; color: string }[]>([])
 export const labelMap = ref<Record<string, string>>({})
 
-export async function initializeData(): Promise<void> {
-  const people = await loadPeople()
-  const messages = await getAllMessages()
+async function loadAllData(): Promise<void> {
+  const [people, messages, labelsFromDB] = await Promise.all([
+    loadPeople(),
+    getAllMessages(),
+    loadLabelsFromDB(),
+  ])
+
   mockPeople.value = people
   cachedMessages.value = messages
-  
-  // Load labels from DB, fallback to localStorage
-  const labelsFromDB = await loadLabelsFromDB()
+
   if (labelsFromDB && labelsFromDB.length > 0) {
     const custom: { id: string; label: string; color: string }[] = []
     const presets: Record<string, string> = { ...defaultLabelMap }
-    
+
     labelsFromDB.forEach(l => {
       if (l.is_preset) {
         presets[l.id] = l.label
@@ -481,13 +492,16 @@ export async function initializeData(): Promise<void> {
     })
     customLabels.value = custom
     labelMap.value = presets
-    
-    localStorage.setItem("customLabels", JSON.stringify(custom));
-    localStorage.setItem("labelMap", JSON.stringify(presets));
+    localStorage.setItem("customLabels", JSON.stringify(custom))
+    localStorage.setItem("labelMap", JSON.stringify(presets))
   } else {
     customLabels.value = getCustomLabels()
     labelMap.value = getLabelMap()
   }
+}
+
+export async function initializeData(): Promise<void> {
+  await loadAllData()
 }
 
 export function getPeople(): Person[] {
@@ -506,30 +520,7 @@ export function getCachedMessages(): Message[] {
 }
 
 export async function refreshData(): Promise<void> {
-  mockPeople.value = await loadPeople()
-  cachedMessages.value = await getAllMessages()
-  
-  const labelsFromDB = await loadLabelsFromDB()
-  if (labelsFromDB && labelsFromDB.length > 0) {
-    const custom: { id: string; label: string; color: string }[] = []
-    const presets: Record<string, string> = { ...defaultLabelMap }
-    
-    labelsFromDB.forEach(l => {
-      if (l.is_preset) {
-        presets[l.id] = l.label
-      } else {
-        custom.push({ id: l.id, label: l.label, color: l.color })
-      }
-    })
-    customLabels.value = custom
-    labelMap.value = presets
-    
-    localStorage.setItem("customLabels", JSON.stringify(custom));
-    localStorage.setItem("labelMap", JSON.stringify(presets));
-  } else {
-    customLabels.value = getCustomLabels()
-    labelMap.value = getLabelMap()
-  }
+  await loadAllData()
 }
 
 export async function resetToDefaultData(): Promise<void> {
